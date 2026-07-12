@@ -55,6 +55,14 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success("Booking cancelled", bookingService.cancelBooking(id, principal.getId(), reason)));
     }
 
+    @PutMapping("/bookings/{id}/reschedule")
+    public ResponseEntity<ApiResponse<BookingResponse>> rescheduleBooking(
+            @PathVariable Long id,
+            @Valid @RequestBody BookingRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.success("Booking rescheduled", bookingService.rescheduleBooking(id, request, principal.getId())));
+    }
+
     @GetMapping("/bookings/calendar")
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getCalendar(
             @RequestParam Long resourceId,

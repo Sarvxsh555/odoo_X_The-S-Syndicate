@@ -47,10 +47,10 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
         LEFT JOIN FETCH a.category c
         LEFT JOIN FETCH a.department d
         WHERE a.deleted = FALSE
-        AND (:search IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(a.assetTag) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(a.serialNumber) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(a.model) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:search IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(a.assetTag) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(a.serialNumber) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(a.model) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')))
         AND (:categoryId IS NULL OR c.id = :categoryId)
         AND (:status IS NULL OR a.status = :status)
         AND (:condition IS NULL OR a.condition = :condition)
@@ -102,4 +102,13 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
         ORDER BY a.warrantyExpiry ASC
     """)
     List<Asset> findWarrantyReport();
+
+    @Query("SELECT a FROM Asset a WHERE a.deleted = FALSE AND a.status = 'AVAILABLE' ORDER BY a.updatedAt ASC")
+    List<Asset> findIdleAssets(Pageable pageable);
+
+    @Query("SELECT SUM(a.purchasePrice) FROM Asset a WHERE a.deleted = FALSE")
+    Optional<java.math.BigDecimal> sumPurchasePrice();
+
+    @Query("SELECT SUM(a.currentValue) FROM Asset a WHERE a.deleted = FALSE")
+    Optional<java.math.BigDecimal> sumCurrentValue();
 }

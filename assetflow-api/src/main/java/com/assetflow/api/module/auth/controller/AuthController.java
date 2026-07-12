@@ -9,10 +9,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.assetflow.api.module.auth.entity.LoginHistory;
+import com.assetflow.api.module.auth.repository.LoginHistoryRepository;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final LoginHistoryRepository loginHistoryRepository;
 
     @PostMapping("/signup")
     @Operation(summary = "Register a new employee account")
@@ -32,8 +37,15 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate and receive JWT tokens")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            ipAddress = httpRequest.getRemoteAddr();
+        }
+        String userAgent = httpRequest.getHeader("User-Agent");
+        AuthResponse response = authService.login(request, ipAddress, userAgent);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
@@ -69,5 +81,15 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Password reset successfully. Please log in."));
+    }
+    @GetMapping("/login-history")
+    @Operation(summary = "Get login history for the current user")
+    public ResponseEntity<ApiResponse<Page<LoginHistory>>> getLoginHistory(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<LoginHistory> history = loginHistoryRepository.findByUserIdOrderByCreatedAtDesc(
+                principal.getId(), PageRequest.of(page, size));
+        return ResponseEntity.ok(ApiResponse.success(history));
     }
 }

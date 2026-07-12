@@ -7,6 +7,7 @@ export const authApi = {
   forgotPassword: (data) => api.post('/auth/forgot-password', data),
   resetPassword: (data) => api.post('/auth/reset-password', data),
   refreshToken: (token) => api.post(`/auth/refresh-token?token=${token}`),
+  getLoginHistory: (params) => api.get('/auth/login-history', { params }),
 }
 
 export const employeeApi = {
@@ -54,6 +55,9 @@ export const assetApi = {
   deleteDocument: (id, docId) => api.delete(`/assets/${id}/documents/${docId}`),
   getQr: (id) => api.get(`/assets/${id}/qr`),
   regenerateQr: (id) => api.post(`/assets/${id}/qr/regenerate`),
+  getMapAssets: () => api.get('/assets/map'),
+  updateLocation: (id, lat, lng, location) => api.patch(`/assets/${id}/location`, null, { params: { latitude: lat, longitude: lng, location } }),
+  updateNfcTag: (id, nfcTagId) => api.patch(`/assets/${id}/nfc`, null, { params: { nfcTagId } }),
 }
 
 export const allocationApi = {
@@ -66,6 +70,7 @@ export const allocationApi = {
     `/allocations/${id}/photos?photoType=${photoType}`,
     formData, { headers: { 'Content-Type': 'multipart/form-data' } }
   ),
+  getPendingTransfers: () => api.get('/allocations', { params: { status: 'TRANSFER_PENDING', size: 1 } }),
 }
 
 export const bookingApi = {
@@ -73,6 +78,7 @@ export const bookingApi = {
   getById: (id) => api.get(`/bookings/${id}`),
   create: (data) => api.post('/bookings', data),
   cancel: (id, reason) => api.delete(`/bookings/${id}?reason=${reason || ''}`),
+  reschedule: (id, data) => api.put(`/bookings/${id}`, data),
   getCalendar: (resourceId, year, month) => api.get('/bookings/calendar', { params: { resourceId, year, month } }),
   getResources: (type) => api.get('/bookable-resources', { params: type ? { type } : {} }),
   createResource: (data) => api.post('/bookable-resources', data),
@@ -84,6 +90,10 @@ export const maintenanceApi = {
   create: (data) => api.post('/maintenance', data),
   updateStatus: (id, data) => api.put(`/maintenance/${id}/status`, data),
   assign: (id, technicianId) => api.put(`/maintenance/${id}/assign?technicianId=${technicianId}`),
+  uploadImage: (id, formData) => api.post(
+    `/maintenance/${id}/images`,
+    formData, { headers: { 'Content-Type': 'multipart/form-data' } }
+  ),
 }
 
 export const auditApi = {
@@ -109,6 +119,8 @@ export const dashboardApi = {
   getMaintenanceTrends: () => api.get('/dashboard/maintenance-trends'),
   getExpiringWarranties: () => api.get('/dashboard/expiring-warranties'),
   getUpcomingReturns: () => api.get('/dashboard/upcoming-returns'),
+  getIdleAssets: () => api.get('/dashboard/idle-assets'),
+  getValuationSummary: () => api.get('/dashboard/valuation-summary'),
 }
 
 export const notificationApi = {
@@ -116,6 +128,11 @@ export const notificationApi = {
   getUnreadCount: () => api.get('/notifications/unread-count'),
   markAsRead: (id) => api.post(`/notifications/${id}/read`),
   markAllAsRead: () => api.post('/notifications/read-all'),
+}
+
+export const activityApi = {
+  getAll: (params) => api.get('/activity-logs', { params }),
+  getRecent: (limit = 10) => api.get('/activity-logs', { params: { size: limit, page: 0 } }),
 }
 
 export const reportApi = {

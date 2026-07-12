@@ -119,6 +119,50 @@ public class BookingService {
         return toResponse(booking);
     }
 
+    @Transactional
+    public BookingResponse rescheduleBooking(Long id, BookingRequest request, Long userId) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking", id));
+
+        if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BusinessException("Cannot reschedule a completed or cancelled booking");
+        }
+
+        var requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        if (!booking.getBookedBy().getId().equals(userId) && requester.getRole() != UserRole.ROLE_ADMIN) {
+            throw new BusinessException("You can only reschedule your own bookings");
+        }
+
+        if (!request.getEndDatetime().isAfter(request.getStartDatetime())) {
+            throw new BusinessException("End time must be after start time");
+        }
+
+        // Overlap validation excluding current booking
+        List<Booking> overlapping = bookingRepository.findOverlapping(
+                booking.getResource().getId(), request.getStartDatetime(), request.getEndDatetime())
+                .stream().filter(b -> !b.getId().equals(id)).toList();
+
+        if (!overlapping.isEmpty()) {
+            throw new BusinessException("New time slot conflicts with an existing reservation. Please choose a different time.");
+        }
+
+        booking.setStartDatetime(request.getStartDatetime());
+        booking.setEndDatetime(request.getEndDatetime());
+        booking.setNotes(request.getNotes() != null ? request.getNotes() : booking.getNotes());
+        
+        booking = bookingRepository.save(booking);
+
+        notificationService.createNotification(
+                booking.getBookedBy().getId(),
+                "Booking Rescheduled",
+                "Your booking for '" + booking.getResource().getName() + "' has been updated.",
+                "BOOKING_UPDATED", "booking", id
+        );
+
+        return toResponse(booking);
+    }
+
     @Transactional(readOnly = true)
     public List<BookingResponse> getCalendarBookings(Long resourceId, int year, int month) {
         return bookingRepository.findByResourceAndMonth(resourceId, year, month)

@@ -4,8 +4,9 @@ import { motion } from 'framer-motion'
 import { assetApi, categoryApi, departmentApi } from '../../api/services'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { Package, Plus, Search, Filter, Eye, Pencil, Trash2, QrCode, Tag, X } from 'lucide-react'
+import { Package, Plus, Search, Filter, Eye, Pencil, Trash2, QrCode, Tag, X, ScanLine } from 'lucide-react'
 import toast from 'react-hot-toast'
+import QrScanner from '../../components/ui/QrScanner'
 
 const STATUS_COLORS = {
   AVAILABLE: 'available', ALLOCATED: 'allocated', MAINTENANCE: 'maintenance',
@@ -24,6 +25,7 @@ export default function AssetListPage() {
 
   const [filters, setFilters] = useState({ search: '', status: '', categoryId: '', departmentId: '', page: 0, size: 20 })
   const [showFilters, setShowFilters] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['assets', filters],
@@ -52,6 +54,15 @@ export default function AssetListPage() {
     if (confirm(`Delete asset "${name}"? This cannot be undone.`)) {
       deleteMutation.mutate(id)
     }
+  }
+
+  const handleScan = (decodedText) => {
+    setShowScanner(false)
+    let scannedId = decodedText
+    if (decodedText.includes('/assets/')) {
+      scannedId = decodedText.split('/assets/').pop()
+    }
+    setFilters(f => ({ ...f, search: scannedId, page: 0 }))
   }
 
   return (
@@ -95,6 +106,9 @@ export default function AssetListPage() {
             </button>
           )}
         </div>
+        <button className="btn-secondary" style={{ height: 38, padding: '0 16px' }} onClick={() => setShowScanner(true)}>
+          <ScanLine size={16} /> Scan QR
+        </button>
       </div>
 
       {/* Filter Row */}
@@ -222,6 +236,10 @@ export default function AssetListPage() {
           </>
         )}
       </div>
+
+      {showScanner && (
+        <QrScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+      )}
     </div>
   )
 }

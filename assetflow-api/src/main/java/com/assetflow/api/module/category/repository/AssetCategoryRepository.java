@@ -23,8 +23,8 @@ public interface AssetCategoryRepository extends JpaRepository<AssetCategory, Lo
     @Query("""
         SELECT c FROM AssetCategory c
         WHERE c.deleted = FALSE
-        AND (:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(c.code) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(c.code) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')))
     """)
     Page<AssetCategory> findAllWithSearch(@Param("search") String search, Pageable pageable);
 

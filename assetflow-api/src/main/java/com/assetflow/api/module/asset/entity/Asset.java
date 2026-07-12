@@ -5,6 +5,8 @@ import com.assetflow.api.module.category.entity.AssetCategory;
 import com.assetflow.api.module.department.entity.Department;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -56,6 +59,18 @@ public class Asset {
 
     private String location;
 
+    @Column(name = "latitude", precision = 10, scale = 7)
+    private java.math.BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 10, scale = 7)
+    private java.math.BigDecimal longitude;
+
+    @Column(name = "nfc_tag_id")
+    private String nfcTagId;
+
+    @Column(name = "location_updated_at")
+    private Instant locationUpdatedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
@@ -81,6 +96,10 @@ public class Asset {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "custom_fields", columnDefinition = "jsonb")
+    private Map<String, String> customFields;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")

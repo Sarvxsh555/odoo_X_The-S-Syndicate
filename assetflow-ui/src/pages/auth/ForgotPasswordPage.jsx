@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
           <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--gradient-violet)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, boxShadow: '0 8px 32px rgba(124,58,237,0.4)' }}>
             <Zap size={26} color="white" />
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, fontFamily: 'Outfit', marginBottom: 8 }}>Reset password</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Reset password</h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>We'll send you a link to reset your password</p>
         </div>
 

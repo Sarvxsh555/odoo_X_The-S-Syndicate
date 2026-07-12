@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -41,6 +42,8 @@ public class AssetResponse {
     private boolean warrantyExpired;
     private int warrantyDaysLeft;
     private String notes;
+    private Map<String, String> customFields;
+    private Integer healthScore;
     private String primaryImageUrl;
     private List<ImageInfo> images;
     private List<DocumentInfo> documents;

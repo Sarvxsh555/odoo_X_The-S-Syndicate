@@ -24,10 +24,10 @@ public interface EmployeeProfileRepository extends JpaRepository<EmployeeProfile
         LEFT JOIN FETCH e.user u
         LEFT JOIN FETCH e.department d
         WHERE e.deleted = FALSE
-        AND (:search IS NULL OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(e.empCode) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:search IS NULL OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(e.empCode) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')))
         AND (:departmentId IS NULL OR d.id = :departmentId)
     """)
     Page<EmployeeProfile> findAllWithFilters(

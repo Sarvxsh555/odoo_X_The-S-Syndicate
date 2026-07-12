@@ -24,8 +24,8 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
         SELECT d FROM Department d
         LEFT JOIN FETCH d.head
         WHERE d.deleted = FALSE
-        AND (:search IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(d.code) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:search IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(d.code) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')))
     """)
     Page<Department> findAllWithSearch(@Param("search") String search, Pageable pageable);
 

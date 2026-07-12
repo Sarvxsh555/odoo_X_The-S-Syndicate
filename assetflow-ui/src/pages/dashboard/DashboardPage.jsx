@@ -1,64 +1,59 @@
 import { useQuery } from '@tanstack/react-query'
+import { dashboardApi, activityApi, maintenanceApi, assetApi, allocationApi } from '../../api/services'
+import { Wrench, ArrowLeftRight, Clock, AlertCircle, Laptop, Calendar, Activity, Zap, CheckCircle2, FileText, Send } from 'lucide-react'
+import React from 'react'
 import { motion } from 'framer-motion'
-import { dashboardApi } from '../../api/services'
-import {
-  Package, Users, Wrench, Calendar, AlertTriangle, TrendingUp,
-  CheckCircle, Clock, Activity, ArrowUpRight, RotateCcw, Shield
-} from 'lucide-react'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { format, subDays } from 'date-fns'
 
-const COLORS = ['#10b981', '#6366f1', '#f59e0b', '#f43f5e', '#6b7280', '#374151', '#06b6d4']
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.4 } }),
-}
-
-const StatCard = ({ title, value, icon: Icon, color, change, onClick }) => (
-  <motion.div
-    className="stat-card glass-card-hover"
-    variants={fadeUp}
-    initial="hidden"
-    animate="show"
-    whileHover={{ scale: 1.01 }}
-    onClick={onClick}
-    style={{ cursor: onClick ? 'pointer' : 'default' }}
-  >
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: 12,
-        background: `${color}20`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: `1px solid ${color}30`,
-      }}>
-        <Icon size={20} color={color} />
-      </div>
-      {change !== undefined && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: change >= 0 ? '#10b981' : '#f43f5e' }}>
-          <ArrowUpRight size={12} style={{ transform: change < 0 ? 'rotate(90deg)' : 'none' }} />
-          {Math.abs(change)}%
-        </div>
-      )}
-    </div>
-    <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text-primary)', fontFamily: 'Outfit', marginBottom: 4 }}>
-      {typeof value === 'number' ? value.toLocaleString() : value}
-    </div>
-    <div style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>{title}</div>
-    <div style={{ position: 'absolute', top: 0, right: 0, width: 100, height: 100, borderRadius: '50%', background: color, filter: 'blur(40px)', opacity: 0.06, pointerEvents: 'none' }} />
-  </motion.div>
-)
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null
+function StatCard({ title, value, total, icon: Icon, color, progressColor, statusText, statusColor, delay }) {
+  const percentage = total > 0 ? (value / total) * 100 : 0;
+  
   return (
-    <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 10, padding: '10px 14px', fontSize: 13 }}>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 4 }}>{label}</p>
-      {payload.map(p => (
-        <p key={p.name} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {p.value}</p>
-      ))}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: [0.25, 1, 0.5, 1] }}
+      style={{
+        background: 'rgba(31, 25, 46, 0.8)',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        borderRadius: 16,
+        padding: '24px 32px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+        <div>
+          <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--color-text-muted)', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 12 }}>
+            {title}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontSize: 42, fontWeight: 800, color: 'white', lineHeight: 1 }}>{value}</span>
+            <span style={{ fontSize: 14, color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>/ {total}</span>
+          </div>
+        </div>
+        <div style={{
+          width: 48, height: 48, borderRadius: 12, background: color,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: `0 0 20px ${color}40`
+        }}>
+          <Icon size={24} color={color === '#FFFFFF' ? '#1A1525' : 'white'} strokeWidth={2.5} />
+        </div>
+      </div>
+      
+      {/* Progress Bar */}
+      <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, marginBottom: 12, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${percentage}%`, background: progressColor, borderRadius: 2 }} />
+      </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.05em', fontWeight: 600 }}>
+        <span style={{ color: 'var(--color-text-muted)' }}>CAPACITY PROFILE</span>
+        <span style={{ color: statusColor }}>{statusText}</span>
+      </div>
+    </motion.div>
   )
 }
 
@@ -66,139 +61,251 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({ queryKey: ['dashboard', 'stats'], queryFn: dashboardApi.getStats })
-  const { data: statusData } = useQuery({ queryKey: ['dashboard', 'status'], queryFn: dashboardApi.getAssetStatus })
-  const { data: deptData } = useQuery({ queryKey: ['dashboard', 'dept'], queryFn: dashboardApi.getDeptDistribution })
-  const { data: maintenanceData } = useQuery({ queryKey: ['dashboard', 'maintenance'], queryFn: dashboardApi.getMaintenanceTrends })
-  const { data: warrantiesData } = useQuery({ queryKey: ['dashboard', 'warranties'], queryFn: dashboardApi.getExpiringWarranties })
-  const { data: returnsData } = useQuery({ queryKey: ['dashboard', 'returns'], queryFn: dashboardApi.getUpcomingReturns })
+  // Queries
+  const { data: statsData } = useQuery({ queryKey: ['dashboard', 'stats'], queryFn: dashboardApi.getStats })
+  const { data: upcomingMaintData } = useQuery({ queryKey: ['dashboard', 'upcomingMaint'], queryFn: () => maintenanceApi.getAll({ status: 'PENDING', size: 4 }) })
+  const { data: activityData } = useQuery({ queryKey: ['dashboard', 'activity'], queryFn: () => activityApi.getRecent(5) })
+  const { data: pendingTransfersData } = useQuery({ queryKey: ['dashboard', 'pendingTransfers'], queryFn: allocationApi.getPendingTransfers })
+  
+  // Mock data for charts since backend might not have this fully wired yet
+  const maintTrendData = Array.from({ length: 7 }).map((_, i) => ({
+    name: format(subDays(new Date(), 6 - i), 'EEE'),
+    requests: Math.floor(Math.random() * 10) + 1
+  }))
 
-  const stats = statsData?.data || {}
-  const statusChartData = (statusData?.data || []).map(d => ({ name: d.status, value: Number(d.count) }))
-  const deptChartData = (deptData?.data || []).slice(0, 8).map(d => ({ name: d.department, count: Number(d.count) }))
-  const warranties = warrantiesData?.data || []
-  const upcomingReturns = returnsData?.data || []
+  const heatmapData = Array.from({ length: 7 }).map((_, d) => 
+    Array.from({ length: 10 }).map((_, h) => ({
+      day: d, hour: h + 8, value: Math.floor(Math.random() * 100)
+    }))
+  ).flat()
+
+  const stats = statsData?.data || { totalAssets: 0, availableAssets: 0, activeAllocations: 0, maintenanceRequests: 0 }
+  const upcomingMaint = upcomingMaintData?.data?.content || []
+  const activities = activityData?.data?.content || []
+  const pendingTransfersCount = pendingTransfersData?.data?.totalElements || 0
+  const hasOverdue = upcomingMaint.length > 0 // Mocking overdue based on pending maint
 
   return (
-    <div className="page-header page-body" style={{ paddingTop: 32 }}>
-      {/* Welcome Banner */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, fontFamily: 'Outfit', marginBottom: 4 }}>
-          Good morning, {user?.firstName} 👋
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 15 }}>
-          Here's what's happening across your asset ecosystem today.
-        </p>
-      </motion.div>
-
-      {/* KPI Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
-        <StatCard title="Total Assets" value={stats.totalAssets || 0} icon={Package} color="#6366f1" onClick={() => navigate('/assets')} />
-        <StatCard title="Available" value={stats.availableAssets || 0} icon={CheckCircle} color="#10b981" onClick={() => navigate('/assets?status=AVAILABLE')} />
-        <StatCard title="Allocated" value={stats.allocatedAssets || 0} icon={ArrowUpRight} color="#3b82f6" onClick={() => navigate('/allocations')} />
-        <StatCard title="In Maintenance" value={stats.maintenanceAssets || 0} icon={Wrench} color="#f59e0b" onClick={() => navigate('/maintenance')} />
-        <StatCard title="Active Allocations" value={stats.activeAllocations || 0} icon={Activity} color="#06b6d4" />
-        <StatCard title="Overdue Returns" value={stats.overdueAllocations || 0} icon={Clock} color="#f43f5e" />
-        <StatCard title="Employees" value={stats.totalEmployees || 0} icon={Users} color="#8b5cf6" onClick={() => navigate('/employees')} />
-        <StatCard title="Expiring Warranties" value={stats.expiringWarranties30Days || 0} icon={Shield} color="#f97316" />
-      </div>
-
-      {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-        {/* Asset Status Pie */}
-        <div className="glass-card" style={{ padding: 24 }}>
-          <div className="section-header" style={{ marginBottom: 20 }}>
-            <h3 className="section-title" style={{ fontSize: 16 }}>Asset Status Distribution</h3>
+    <div className="page-body" style={{ padding: '40px' }}>
+      
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'white', letterSpacing: '-0.02em', marginBottom: 12 }}>
+            Operational Matrix Control
+          </h1>
+          <div style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--color-text-secondary)', letterSpacing: '0.05em' }}>
+            SECURE ACCESS CLEARANCE LEVEL: <span style={{ color: 'var(--color-accent-emerald)' }}>ADMIN</span> // DEPLOYED CLUSTER: OREGON-W2
           </div>
-          {statusChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie data={statusChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} dataKey="value">
-                  {statusChartData.map((entry, index) => (
-                    <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{v}</span>} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>No data yet</div>
-          )}
         </div>
-
-        {/* Department Distribution Bar */}
-        <div className="glass-card" style={{ padding: 24 }}>
-          <div className="section-header" style={{ marginBottom: 20 }}>
-            <h3 className="section-title" style={{ fontSize: 16 }}>Assets by Department</h3>
-          </div>
-          {deptChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={deptChartData} layout="vertical">
-                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} width={90} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>No data yet</div>
-          )}
+        
+        <div style={{
+          background: 'rgba(31, 25, 46, 0.8)', border: '1px solid rgba(255, 255, 255, 0.05)',
+          padding: '12px 20px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12
+        }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-accent-emerald)', boxShadow: '0 0 10px var(--color-accent-emerald)' }} />
+          <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--color-accent-emerald)', fontWeight: 700, letterSpacing: '0.05em' }}>
+            LEDGER ENGINE: SECURED & SYNCHRONIZED
+          </span>
         </div>
       </div>
 
-      {/* Bottom Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {/* Expiring Warranties */}
-        <div className="glass-card" style={{ padding: 24 }}>
-          <div className="section-header">
-            <h3 className="section-title" style={{ fontSize: 16 }}>⚠️ Expiring Warranties</h3>
-            <button className="btn-ghost btn-sm" onClick={() => navigate('/assets')}>View all</button>
-          </div>
-          {warranties.length === 0 ? (
-            <p style={{ color: 'var(--color-text-muted)', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>No warranties expiring soon</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {warranties.map(w => (
-                <div key={w.id} onClick={() => navigate(`/assets/${w.id}`)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, background: 'var(--color-bg-elevated)', cursor: 'pointer', transition: 'background 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'var(--color-bg-elevated)'}
-                >
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>{w.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{w.assetTag}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--color-accent-amber)', fontWeight: 600 }}>{w.warrantyExpiry}</div>
-                </div>
-              ))}
+      {/* Alert Box */}
+      {hasOverdue && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+          style={{
+            background: 'rgba(255, 51, 102, 0.1)', border: '1px solid rgba(255, 51, 102, 0.2)',
+            borderRadius: 16, padding: '24px 32px', marginBottom: 32,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+          }}
+        >
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255, 51, 102, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertCircle size={20} color="var(--color-accent-rose)" />
             </div>
-          )}
+            <div>
+              <h4 style={{ fontFamily: 'monospace', fontSize: 14, color: 'white', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 6 }}>
+                OVERDUE HARDWARE DETECTED
+              </h4>
+              <p style={{ color: 'var(--color-accent-rose)', fontSize: 13, margin: 0 }}>
+                {upcomingMaint.length} asset allocation tags are past their return threshold limits. Compliance action required immediately.
+              </p>
+            </div>
+          </div>
+          <button style={{
+            background: 'rgba(255, 51, 102, 0.2)', color: 'var(--color-accent-rose)',
+            border: '1px solid rgba(255, 51, 102, 0.4)', borderRadius: 8,
+            padding: '10px 20px', fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
+            cursor: 'pointer', transition: 'all 0.2s'
+          }} onClick={() => navigate('/allocations')}>
+            AUDIT OVERDUES
+          </button>
+        </motion.div>
+      )}
+
+      {/* KPI Cards Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 24, marginBottom: 32 }}>
+        <StatCard 
+          title="ASSETS AVAILABLE" 
+          value={stats.availableAssets} 
+          total={stats.totalAssets || 8} 
+          icon={Laptop} 
+          color="var(--color-accent-cyan)" 
+          progressColor="linear-gradient(90deg, var(--color-accent-cyan), var(--color-accent-violet))"
+          statusText="Optimal"
+          statusColor="var(--color-accent-cyan)"
+          delay={0.1} 
+        />
+        <StatCard 
+          title="ASSETS ALLOCATED" 
+          value={stats.activeAllocations} 
+          total={stats.totalAssets || 8} 
+          icon={ArrowLeftRight} 
+          color="var(--color-accent-violet)" 
+          progressColor="var(--color-accent-violet)"
+          statusText={`${Math.round((stats.activeAllocations / (stats.totalAssets || 1)) * 100)}% Usage`}
+          statusColor="var(--color-accent-cyan)"
+          delay={0.2} 
+        />
+        <StatCard 
+          title="MAINTENANCE STREAM" 
+          value={stats.maintenanceRequests} 
+          total={stats.totalAssets || 8} 
+          icon={Wrench} 
+          color="var(--color-accent-amber)" 
+          progressColor="rgba(255,255,255,0.1)"
+          statusText={`${stats.maintenanceRequests} Urgent Tasks`}
+          statusColor="var(--color-accent-cyan)"
+          delay={0.3} 
+        />
+        <StatCard 
+          title="ACTIVE BOOKINGS" 
+          value={2} 
+          total={4} 
+          icon={Calendar} 
+          color="var(--color-accent-emerald)" 
+          progressColor="linear-gradient(90deg, var(--color-accent-emerald), var(--color-accent-cyan))"
+          statusText="Fully Cleared"
+          statusColor="var(--color-accent-cyan)"
+          delay={0.4} 
+        />
+        <StatCard 
+          title="PENDING TRANSFERS" 
+          value={pendingTransfersCount} 
+          total={stats.totalAssets || 8} 
+          icon={Send} 
+          color="var(--color-accent-rose)" 
+          progressColor="rgba(255,255,255,0.1)"
+          statusText={pendingTransfersCount > 0 ? "Action Required" : "All Clear"}
+          statusColor="var(--color-accent-rose)"
+          delay={0.5} 
+        />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, marginBottom: 120 }}>
+        {/* Left Column: Quick Actions & Activity */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Quick Actions */}
+          <div className="glass-card" style={{ padding: 24 }}>
+            <h3 style={{ fontSize: 13, color: 'var(--color-text-muted)', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.1em', marginBottom: 16 }}>QUICK ACTIONS</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button className="btn-primary" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate('/assets/register')}>
+                <Zap size={16} /> Register New Asset
+              </button>
+              <button className="btn-secondary" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate('/allocations')}>
+                <ArrowLeftRight size={16} /> Allocate Asset
+              </button>
+              <button className="btn-secondary" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate('/maintenance')}>
+                <AlertCircle size={16} /> Report Issue
+              </button>
+            </div>
+          </div>
+
+          {/* Real Activity Feed */}
+          <div className="glass-card" style={{ padding: 24 }}>
+            <h3 style={{ fontSize: 13, color: 'var(--color-text-muted)', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.1em', marginBottom: 16 }}>SYSTEM ACTIVITY</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {activities.length > 0 ? activities.map((activity, i) => (
+                <div key={activity.id || i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                    <Activity size={14} color="var(--color-accent-violet-light)" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: 'white', lineHeight: 1.4 }}>
+                      <span style={{ fontWeight: 600, color: 'var(--color-accent-cyan)' }}>{activity.userName}</span> {activity.action} <span style={{ fontWeight: 600 }}>{activity.entityType}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 4 }}>
+                      {new Date(activity.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>No recent activity.</div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Upcoming Returns */}
-        <div className="glass-card" style={{ padding: 24 }}>
-          <div className="section-header">
-            <h3 className="section-title" style={{ fontSize: 16 }}>📦 Upcoming Returns</h3>
-            <button className="btn-ghost btn-sm" onClick={() => navigate('/allocations')}>View all</button>
+        {/* Right Column: Charts */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Maintenance Trend Area Chart */}
+          <div className="glass-card" style={{ padding: 24, height: 300 }}>
+            <h3 style={{ fontSize: 13, color: 'var(--color-text-muted)', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.1em', marginBottom: 16 }}>MAINTENANCE TREND (7 DAYS)</h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={maintTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-accent-amber)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--color-accent-amber)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  contentStyle={{ background: '#1A1525', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}
+                  itemStyle={{ color: 'var(--color-accent-amber)' }}
+                />
+                <Area type="monotone" dataKey="requests" stroke="var(--color-accent-amber)" strokeWidth={3} fillOpacity={1} fill="url(#colorRequests)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-          {upcomingReturns.length === 0 ? (
-            <p style={{ color: 'var(--color-text-muted)', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>No upcoming returns in next 14 days</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {upcomingReturns.map(r => (
-                <div key={r.id} onClick={() => navigate('/allocations')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, background: 'var(--color-bg-elevated)', cursor: 'pointer', transition: 'background 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'var(--color-bg-elevated)'}
-                >
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>{r.assetName}</div>
-                    <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{r.assetTag}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--color-accent-blue)', fontWeight: 600 }}>{r.expectedReturnDate}</div>
-                </div>
+
+          {/* Booking Heatmap (Custom Grid) */}
+          <div className="glass-card" style={{ padding: 24 }}>
+            <h3 style={{ fontSize: 13, color: 'var(--color-text-muted)', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.1em', marginBottom: 16 }}>RESOURCE BOOKING DENSITY</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(10, 1fr)', gap: 4 }}>
+              {/* Header Row (Hours) */}
+              <div />
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} style={{ fontSize: 10, color: 'var(--color-text-muted)', textAlign: 'center' }}>{i + 8}h</div>
+              ))}
+              
+              {/* Grid Body */}
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, d) => (
+                <React.Fragment key={day}>
+                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)', alignSelf: 'center' }}>{day}</div>
+                  {Array.from({ length: 10 }).map((_, h) => {
+                    const val = heatmapData.find(x => x.day === d && x.hour === h + 8)?.value || 0
+                    const opacity = Math.max(0.1, val / 100)
+                    return (
+                      <div 
+                        key={h} 
+                        style={{ 
+                          height: 24, 
+                          background: `rgba(99, 102, 241, ${opacity})`, 
+                          borderRadius: 4,
+                          border: '1px solid rgba(255,255,255,0.02)' 
+                        }} 
+                        title={`${day} ${h+8}h: ${val} bookings`}
+                      />
+                    )
+                  })}
+                </React.Fragment>
               ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

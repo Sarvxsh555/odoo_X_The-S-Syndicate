@@ -9,6 +9,7 @@ import com.assetflow.api.module.auth.dto.*;
 import com.assetflow.api.module.auth.entity.*;
 import com.assetflow.api.module.auth.repository.*;
 import com.assetflow.api.module.auth.security.JwtService;
+import com.assetflow.api.module.auth.entity.LoginHistory;
 import com.assetflow.api.module.auth.security.UserPrincipal;
 import com.assetflow.api.module.user.entity.EmployeeProfile;
 import com.assetflow.api.module.user.repository.EmployeeProfileRepository;
@@ -38,6 +39,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtProperties jwtProperties;
     private final EmailService emailService;
+    private final com.assetflow.api.module.activity.repository.ActivityLogRepository activityLogRepository;
+    private final LoginHistoryRepository loginHistoryRepository;
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
@@ -69,7 +72,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request, String ipAddress, String userAgent) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -79,6 +82,33 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", principal.getEmail()));
 
         userRepository.updateLastLogin(user.getId(), Instant.now());
+
+        com.assetflow.api.module.activity.entity.ActivityLog logEntry = com.assetflow.api.module.activity.entity.ActivityLog.builder()
+                .user(user)
+                .action("USER_LOGIN")
+                .description("User logged into the system")
+                .ipAddress(ipAddress)
+                .userAgent(userAgent)
+                .build();
+        activityLogRepository.save(logEntry);
+
+        // Detect device type from user agent
+        String deviceType = "Desktop";
+        if (userAgent != null) {
+            String ua = userAgent.toLowerCase();
+            if (ua.contains("mobile") || ua.contains("android") || ua.contains("iphone")) deviceType = "Mobile";
+            else if (ua.contains("tablet") || ua.contains("ipad")) deviceType = "Tablet";
+        }
+
+        // Record login history
+        LoginHistory loginHistory = LoginHistory.builder()
+                .user(user)
+                .ipAddress(ipAddress)
+                .userAgent(userAgent)
+                .loginStatus("SUCCESS")
+                .deviceType(deviceType)
+                .build();
+        loginHistoryRepository.save(loginHistory);
 
         EmployeeProfile profile = employeeProfileRepository.findByUserIdAndDeletedFalse(user.getId())
                 .orElse(null);

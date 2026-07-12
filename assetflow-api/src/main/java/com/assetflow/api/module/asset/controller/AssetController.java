@@ -18,6 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/v1/assets")
@@ -129,5 +131,35 @@ public class AssetController {
     @Operation(summary = "Regenerate QR code for an asset (Admin only)")
     public ResponseEntity<ApiResponse<AssetResponse.QrInfo>> regenerateQrCode(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success("QR code regenerated", assetService.regenerateQr(id)));
+    }
+
+    // GPS Location update
+    @PatchMapping("/{id}/location")
+    @Operation(summary = "Update GPS location of an asset (vehicle tracking simulation)")
+    public ResponseEntity<ApiResponse<Void>> updateGpsLocation(
+            @PathVariable Long id,
+            @RequestParam(required = false) BigDecimal latitude,
+            @RequestParam(required = false) BigDecimal longitude,
+            @RequestParam(required = false) String location) {
+        assetService.updateLocation(id, latitude, longitude, location);
+        return ResponseEntity.ok(ApiResponse.success("Location updated"));
+    }
+
+    // NFC Tag assignment
+    @PatchMapping("/{id}/nfc")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Assign or update NFC tag ID for an asset")
+    public ResponseEntity<ApiResponse<Void>> updateNfcTag(
+            @PathVariable Long id,
+            @RequestParam String nfcTagId) {
+        assetService.updateNfcTag(id, nfcTagId);
+        return ResponseEntity.ok(ApiResponse.success("NFC tag updated"));
+    }
+
+    // Map view - all assets with coordinates
+    @GetMapping("/map")
+    @Operation(summary = "Get all assets that have GPS coordinates for map display")
+    public ResponseEntity<ApiResponse<?>> getMapAssets() {
+        return ResponseEntity.ok(ApiResponse.success(assetService.getAssetsWithLocation()));
     }
 }

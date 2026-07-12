@@ -107,6 +107,7 @@ public class AssetService {
                 .currentValue(request.getPurchasePrice())
                 .warrantyExpiry(request.getWarrantyExpiry())
                 .notes(request.getNotes())
+                .customFields(request.getCustomFields())
                 .createdBy(creator)
                 .build();
 
@@ -152,6 +153,7 @@ public class AssetService {
         asset.setPurchasePrice(request.getPurchasePrice());
         asset.setWarrantyExpiry(request.getWarrantyExpiry());
         asset.setNotes(request.getNotes());
+        asset.setCustomFields(request.getCustomFields());
 
         if (request.getDepartmentId() != null) {
             Department dept = departmentRepository.findByIdAndDeletedFalse(request.getDepartmentId())
@@ -323,6 +325,14 @@ public class AssetService {
             warrantyExpired = warrantyDaysLeft < 0;
         }
 
+        int healthScore = switch (asset.getCondition()) {
+            case EXCELLENT -> 100;
+            case GOOD -> 85;
+            case FAIR -> 65;
+            case POOR -> 40;
+            case DAMAGED -> 10;
+        };
+
         return AssetResponse.builder()
                 .id(asset.getId())
                 .assetTag(asset.getAssetTag())
@@ -339,6 +349,7 @@ public class AssetService {
                 .warrantyExpiry(asset.getWarrantyExpiry())
                 .warrantyExpired(warrantyExpired)
                 .warrantyDaysLeft(Math.max(0, warrantyDaysLeft))
+                .healthScore(healthScore)
                 .primaryImageUrl(primaryImageUrl)
                 .createdAt(asset.getCreatedAt())
                 .build();
@@ -353,6 +364,7 @@ public class AssetService {
         response.setVendor(asset.getVendor());
         response.setCurrentValue(asset.getCurrentValue());
         response.setNotes(asset.getNotes());
+        response.setCustomFields(asset.getCustomFields());
         response.setUpdatedAt(asset.getUpdatedAt());
 
         response.setImages(imageRepository.findByAssetIdOrderByPrimaryDesc(asset.getId())
@@ -382,5 +394,42 @@ public class AssetService {
                         .build()));
 
         return response;
+    }
+
+    @Transactional
+    public void updateLocation(Long assetId, java.math.BigDecimal latitude, java.math.BigDecimal longitude, String location) {
+        Asset asset = assetRepository.findByIdAndDeletedFalse(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset", assetId));
+        if (latitude != null) asset.setLatitude(latitude);
+        if (longitude != null) asset.setLongitude(longitude);
+        if (location != null) asset.setLocation(location);
+        asset.setLocationUpdatedAt(java.time.Instant.now());
+        assetRepository.save(asset);
+    }
+
+    @Transactional
+    public void updateNfcTag(Long assetId, String nfcTagId) {
+        Asset asset = assetRepository.findByIdAndDeletedFalse(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset", assetId));
+        asset.setNfcTagId(nfcTagId);
+        assetRepository.save(asset);
+    }
+
+    public java.util.List<java.util.Map<String, Object>> getAssetsWithLocation() {
+        return assetRepository.findAll().stream()
+                .filter(a -> !a.isDeleted() && a.getLatitude() != null && a.getLongitude() != null)
+                .map(a -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", a.getId());
+                    map.put("name", a.getName());
+                    map.put("assetTag", a.getAssetTag());
+                    map.put("status", a.getStatus());
+                    map.put("lat", a.getLatitude());
+                    map.put("lng", a.getLongitude());
+                    map.put("location", a.getLocation());
+                    map.put("locationUpdatedAt", a.getLocationUpdatedAt());
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 }
