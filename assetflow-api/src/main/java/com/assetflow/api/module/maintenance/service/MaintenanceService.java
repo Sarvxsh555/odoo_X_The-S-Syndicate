@@ -58,6 +58,8 @@ public class MaintenanceService {
                 .description(request.getDescription())
                 .scheduledDate(request.getScheduledDate())
                 .estimatedCost(request.getEstimatedCost())
+                .status(com.assetflow.api.module.auth.entity.UserRole.ROLE_ADMIN.equals(requestedBy.getRole()) ? MaintenanceStatus.APPROVED : MaintenanceStatus.PENDING)
+                .approvedBy(com.assetflow.api.module.auth.entity.UserRole.ROLE_ADMIN.equals(requestedBy.getRole()) ? requestedBy : null)
                 .build();
 
         maintenance = maintenanceRepository.save(maintenance);

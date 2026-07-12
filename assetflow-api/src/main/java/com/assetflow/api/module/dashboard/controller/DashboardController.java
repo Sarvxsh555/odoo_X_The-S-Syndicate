@@ -50,4 +50,14 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getUpcomingReturns() {
         return ResponseEntity.ok(ApiResponse.success(dashboardService.getUpcomingReturns()));
     }
+
+    @GetMapping("/idle-assets")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getIdleAssets() {
+        return ResponseEntity.ok(ApiResponse.success(dashboardService.getIdleAssets()));
+    }
+
+    @GetMapping("/valuation-summary")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getValuationSummary() {
+        return ResponseEntity.ok(ApiResponse.success(dashboardService.getValuationSummary()));
+    }
 }

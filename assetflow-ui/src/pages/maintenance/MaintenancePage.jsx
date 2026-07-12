@@ -2,17 +2,33 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { maintenanceApi, assetApi } from '../../api/services'
 import { useAuth } from '../../context/AuthContext'
-import { Plus, Wrench, X, AlertTriangle } from 'lucide-react'
+import { Plus, Wrench, X, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import toast from 'react-hot-toast'
+import DragDropUpload from '../../components/ui/DragDropUpload'
+import AssetTimeline from '../../components/ui/AssetTimeline'
 
 const PRIORITY_COLORS = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high', CRITICAL: 'critical' }
 const STATUS_COLORS = { PENDING: 'pending', APPROVED: 'approved', ASSIGNED: 'medium', IN_PROGRESS: 'allocated', RESOLVED: 'resolved', CANCELLED: 'retired' }
 
 function CreateModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({ assetId: '', title: '', description: '', priority: 'MEDIUM', scheduledDate: '', estimatedCost: '' })
+  const [images, setImages] = useState([])
+  
   const { data: assetsData } = useQuery({ queryKey: ['assets', 'maint'], queryFn: () => assetApi.getAll({ size: 100 }) })
+  
   const mutation = useMutation({
-    mutationFn: maintenanceApi.create,
+    mutationFn: async (data) => {
+      const res = await maintenanceApi.create(data)
+      const maintId = res.data.id
+      if (images.length > 0) {
+        for (const img of images) {
+          const formData = new FormData()
+          formData.append('file', img)
+          await maintenanceApi.uploadImage(maintId, formData)
+        }
+      }
+      return res
+    },
     onSuccess: () => { toast.success('Maintenance request submitted'); onSuccess(); onClose() },
     onError: e => toast.error(e?.message || 'Failed'),
   })
@@ -35,21 +51,38 @@ function CreateModal({ onClose, onSuccess }) {
           <label className="form-label">Title *</label>
           <input className="input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Brief issue description" />
         </div>
-        <div className="form-group">
-          <label className="form-label">Priority</label>
-          <select className="input" value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}>
-            {['LOW','MEDIUM','HIGH','CRITICAL'].map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+          <div className="form-group">
+            <label className="form-label">Priority</label>
+            <select className="input" value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}>
+              {['LOW','MEDIUM','HIGH','CRITICAL'].map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Scheduled Date</label>
+            <input type="date" className="input" value={form.scheduledDate} onChange={e => setForm(f => ({ ...f, scheduledDate: e.target.value }))} />
+          </div>
         </div>
         <div className="form-group">
           <label className="form-label">Description</label>
-          <textarea className="input" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Detailed description..." />
+          <textarea className="input" rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Detailed description..." />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div className="form-group"><label className="form-label">Scheduled Date</label><input type="date" className="input" value={form.scheduledDate} onChange={e => setForm(f => ({ ...f, scheduledDate: e.target.value }))} /></div>
-          <div className="form-group"><label className="form-label">Estimated Cost ($)</label><input type="number" className="input" value={form.estimatedCost} onChange={e => setForm(f => ({ ...f, estimatedCost: e.target.value }))} placeholder="0.00" /></div>
+        
+        <div className="form-group">
+          <label className="form-label">Images (Optional)</label>
+          <DragDropUpload
+            multiple
+            accept="image/*"
+            label="Drop photos of issue"
+            onFilesSelected={(files) => setImages(Array.isArray(files) ? files : [files])}
+          />
         </div>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+
+        <div className="form-group">
+          <label className="form-label">Estimated Cost ($)</label>
+          <input type="number" className="input" value={form.estimatedCost} onChange={e => setForm(f => ({ ...f, estimatedCost: e.target.value }))} placeholder="0.00" />
+        </div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn-primary" disabled={!form.assetId || !form.title || mutation.isPending}
             onClick={() => mutation.mutate({ assetId: Number(form.assetId), title: form.title, description: form.description, priority: form.priority, scheduledDate: form.scheduledDate || undefined, estimatedCost: form.estimatedCost ? Number(form.estimatedCost) : undefined })}>
@@ -58,6 +91,70 @@ function CreateModal({ onClose, onSuccess }) {
         </div>
       </div>
     </div>
+  )
+}
+
+function MaintenanceRow({ req, isAdmin, onUpdateStatus }) {
+  const [expanded, setExpanded] = useState(false)
+  
+  return (
+    <>
+      <tr style={{ cursor: 'pointer', background: expanded ? 'rgba(255,255,255,0.02)' : 'transparent' }} onClick={() => setExpanded(!expanded)}>
+        <td>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {expanded ? <ChevronUp size={14} color="var(--color-text-muted)" /> : <ChevronDown size={14} color="var(--color-text-muted)" />}
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-text-primary)' }}>{req.assetName}</div>
+              <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--color-accent-violet-light)' }}>{req.assetTag}</div>
+            </div>
+          </div>
+        </td>
+        <td style={{ fontSize: 13, maxWidth: 200 }}>
+          <div style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{req.title}</div>
+          {req.description && <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }} className="truncate-2">{req.description}</div>}
+        </td>
+        <td><span className={`badge badge-${PRIORITY_COLORS[req.priority]}`}>{req.priority}</span></td>
+        <td><span className={`badge badge-${STATUS_COLORS[req.status] || 'pending'}`}>{req.status}</span></td>
+        <td style={{ fontSize: 12 }}>{req.scheduledDate || '—'}</td>
+        <td style={{ fontSize: 12 }}>{req.estimatedCost ? `$${req.estimatedCost.toLocaleString()}` : '—'}</td>
+        {isAdmin && (
+          <td onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {req.status === 'PENDING' && (
+                <button className="btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => onUpdateStatus(req.id, 'APPROVED')}>Approve</button>
+              )}
+              {req.status === 'APPROVED' && (
+                <button className="btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => onUpdateStatus(req.id, 'IN_PROGRESS')}>Start</button>
+              )}
+              {req.status === 'IN_PROGRESS' && (
+                <button className="btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => onUpdateStatus(req.id, 'RESOLVED')}>Resolve</button>
+              )}
+            </div>
+          </td>
+        )}
+      </tr>
+      {expanded && (
+        <tr>
+          <td colSpan={isAdmin ? 7 : 6} style={{ padding: 0, borderBottom: '1px solid var(--color-border-subtle)' }}>
+            <div style={{ padding: '16px 24px', background: 'rgba(255,255,255,0.01)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                <div>
+                  <h5 style={{ fontSize: 12, color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>Details</h5>
+                  <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}><span style={{ color: 'var(--color-text-muted)' }}>Requested By:</span> {req.requestedByName}</div>
+                  <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}><span style={{ color: 'var(--color-text-muted)' }}>Technician:</span> {req.technicianName || 'Unassigned'}</div>
+                  <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}><span style={{ color: 'var(--color-text-muted)' }}>Created At:</span> {new Date(req.createdAt).toLocaleString()}</div>
+                  <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}><span style={{ color: 'var(--color-text-muted)' }}>Description:</span> {req.description || 'N/A'}</div>
+                </div>
+                <div>
+                  <h5 style={{ fontSize: 12, color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>Timeline</h5>
+                  <AssetTimeline maintenance={[req]} />
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   )
 }
 
@@ -78,6 +175,10 @@ export default function MaintenancePage() {
     onSuccess: () => { queryClient.invalidateQueries(['maintenance']); toast.success('Status updated') },
     onError: e => toast.error(e?.message || 'Failed'),
   })
+
+  const handleUpdateStatus = (id, status) => {
+    updateMutation.mutate({ id, status })
+  }
 
   const requests = data?.data?.content || []
   const totalPages = data?.data?.totalPages || 0
@@ -123,7 +224,6 @@ export default function MaintenancePage() {
                   <th>Title</th>
                   <th>Priority</th>
                   <th>Status</th>
-                  <th>Requested By</th>
                   <th>Scheduled</th>
                   <th>Est. Cost</th>
                   {isAdmin && <th>Actions</th>}
@@ -131,36 +231,7 @@ export default function MaintenancePage() {
               </thead>
               <tbody>
                 {requests.map(r => (
-                  <tr key={r.id}>
-                    <td>
-                      <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-text-primary)' }}>{r.assetName}</div>
-                      <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--color-accent-violet-light)' }}>{r.assetTag}</div>
-                    </td>
-                    <td style={{ fontSize: 13, maxWidth: 200 }}>
-                      <div style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{r.title}</div>
-                      {r.description && <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }} className="truncate-2">{r.description}</div>}
-                    </td>
-                    <td><span className={`badge badge-${PRIORITY_COLORS[r.priority]}`}>{r.priority}</span></td>
-                    <td><span className={`badge badge-${STATUS_COLORS[r.status] || 'pending'}`}>{r.status}</span></td>
-                    <td style={{ fontSize: 12 }}>{r.requestedByName}</td>
-                    <td style={{ fontSize: 12 }}>{r.scheduledDate || '—'}</td>
-                    <td style={{ fontSize: 12 }}>{r.estimatedCost ? `$${r.estimatedCost.toLocaleString()}` : '—'}</td>
-                    {isAdmin && (
-                      <td>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          {r.status === 'PENDING' && (
-                            <button className="btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => updateMutation.mutate({ id: r.id, status: 'APPROVED' })}>Approve</button>
-                          )}
-                          {r.status === 'APPROVED' && (
-                            <button className="btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => updateMutation.mutate({ id: r.id, status: 'IN_PROGRESS' })}>Start</button>
-                          )}
-                          {r.status === 'IN_PROGRESS' && (
-                            <button className="btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => updateMutation.mutate({ id: r.id, status: 'RESOLVED' })}>Resolve</button>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
+                  <MaintenanceRow key={r.id} req={r} isAdmin={isAdmin} onUpdateStatus={handleUpdateStatus} />
                 ))}
               </tbody>
             </table>

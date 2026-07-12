@@ -3,6 +3,7 @@ package com.assetflow.api.module.booking.service;
 import com.assetflow.api.common.dto.PageResponse;
 import com.assetflow.api.common.exception.BusinessException;
 import com.assetflow.api.common.exception.ResourceNotFoundException;
+import com.assetflow.api.module.auth.entity.UserRole;
 import com.assetflow.api.module.auth.repository.UserRepository;
 import com.assetflow.api.module.booking.dto.*;
 import com.assetflow.api.module.booking.entity.*;
@@ -46,6 +47,10 @@ public class BookingService {
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request, Long userId) {
+        if (!request.getEndDatetime().isAfter(request.getStartDatetime())) {
+            throw new BusinessException("End time must be after start time");
+        }
+
         BookableResource resource = resourceRepository.findByIdAndDeletedFalse(request.getResourceId())
                 .orElseThrow(() -> new ResourceNotFoundException("Resource", request.getResourceId()));
 
@@ -58,10 +63,6 @@ public class BookingService {
                 request.getResourceId(), request.getStartDatetime(), request.getEndDatetime());
         if (!overlapping.isEmpty()) {
             throw new BusinessException("Booking conflicts with an existing reservation for this resource. Please choose a different time slot.");
-        }
-
-        if (!request.getEndDatetime().isAfter(request.getStartDatetime())) {
-            throw new BusinessException("End time must be after start time");
         }
 
         var user = userRepository.findById(userId)
@@ -98,6 +99,12 @@ public class BookingService {
             throw new BusinessException("Cannot cancel a completed booking");
         }
 
+        var requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        if (!booking.getBookedBy().getId().equals(userId) && requester.getRole() != UserRole.ROLE_ADMIN) {
+            throw new BusinessException("You can only cancel your own bookings");
+        }
+
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancelledReason(reason);
         booking = bookingRepository.save(booking);
@@ -107,6 +114,50 @@ public class BookingService {
                 "Booking Cancelled",
                 "Your booking for '" + booking.getResource().getName() + "' has been cancelled.",
                 "BOOKING_CANCELLED", "booking", id
+        );
+
+        return toResponse(booking);
+    }
+
+    @Transactional
+    public BookingResponse rescheduleBooking(Long id, BookingRequest request, Long userId) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking", id));
+
+        if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BusinessException("Cannot reschedule a completed or cancelled booking");
+        }
+
+        var requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        if (!booking.getBookedBy().getId().equals(userId) && requester.getRole() != UserRole.ROLE_ADMIN) {
+            throw new BusinessException("You can only reschedule your own bookings");
+        }
+
+        if (!request.getEndDatetime().isAfter(request.getStartDatetime())) {
+            throw new BusinessException("End time must be after start time");
+        }
+
+        // Overlap validation excluding current booking
+        List<Booking> overlapping = bookingRepository.findOverlapping(
+                booking.getResource().getId(), request.getStartDatetime(), request.getEndDatetime())
+                .stream().filter(b -> !b.getId().equals(id)).toList();
+
+        if (!overlapping.isEmpty()) {
+            throw new BusinessException("New time slot conflicts with an existing reservation. Please choose a different time.");
+        }
+
+        booking.setStartDatetime(request.getStartDatetime());
+        booking.setEndDatetime(request.getEndDatetime());
+        booking.setNotes(request.getNotes() != null ? request.getNotes() : booking.getNotes());
+        
+        booking = bookingRepository.save(booking);
+
+        notificationService.createNotification(
+                booking.getBookedBy().getId(),
+                "Booking Rescheduled",
+                "Your booking for '" + booking.getResource().getName() + "' has been updated.",
+                "BOOKING_UPDATED", "booking", id
         );
 
         return toResponse(booking);

@@ -105,4 +105,30 @@ public class DashboardService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getIdleAssets() {
+        return assetRepository.findIdleAssets(PageRequest.of(0, 10))
+                .stream()
+                .map(a -> Map.of(
+                        "id", (Object) a.getId(),
+                        "name", a.getName(),
+                        "assetTag", a.getAssetTag(),
+                        "categoryName", a.getCategory().getName(),
+                        "updatedAt", a.getUpdatedAt().toString()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getValuationSummary() {
+        java.math.BigDecimal totalPurchase = assetRepository.sumPurchasePrice().orElse(java.math.BigDecimal.ZERO);
+        java.math.BigDecimal totalCurrent = assetRepository.sumCurrentValue().orElse(java.math.BigDecimal.ZERO);
+        
+        return Map.of(
+                "totalPurchaseValue", totalPurchase,
+                "totalCurrentValue", totalCurrent,
+                "totalDepreciation", totalPurchase.subtract(totalCurrent)
+        );
+    }
 }

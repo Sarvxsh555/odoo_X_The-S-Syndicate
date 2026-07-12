@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface AssetImageRepository extends JpaRepository<AssetImage, Long> {
     List<AssetImage> findByAssetIdOrderByPrimaryDesc(Long assetId);
+    List<AssetImage> findByAssetIdInAndPrimaryTrue(List<Long> assetIds);
     Optional<AssetImage> findByIdAndAssetId(Long id, Long assetId);
     boolean existsByAssetIdAndPrimaryTrue(Long assetId);
 }

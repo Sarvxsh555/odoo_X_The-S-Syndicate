@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 @Data
 public class AssetRequest {
@@ -43,4 +44,6 @@ public class AssetRequest {
     private LocalDate warrantyExpiry;
 
     private String notes;
+
+    private Map<String, String> customFields;
 }

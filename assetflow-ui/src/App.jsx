@@ -20,6 +20,8 @@ const NotificationsPage = lazy(() => import('./pages/notifications/Notifications
 const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
 const SearchPage = lazy(() => import('./pages/search/SearchPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
+const BookingCalendarPage = lazy(() => import('./pages/bookings/BookingCalendarPage'))
+const AssetMapPage = lazy(() => import('./pages/assets/AssetMapPage'))
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -64,6 +66,8 @@ function AppRoutes() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="calendar" element={<BookingCalendarPage />} />
+          <Route path="map" element={<AssetMapPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

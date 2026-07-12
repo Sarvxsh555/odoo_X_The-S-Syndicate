@@ -1,10 +1,10 @@
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { assetApi, categoryApi, departmentApi } from '../../api/services'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const schema = z.object({
@@ -22,6 +22,10 @@ const schema = z.object({
   purchasePrice: z.string().optional(),
   warrantyExpiry: z.string().optional(),
   notes: z.string().optional(),
+  customFieldsArray: z.array(z.object({
+    key: z.string().min(1, 'Key required'),
+    value: z.string().min(1, 'Value required')
+  })).optional()
 })
 
 export default function AssetRegisterPage() {
@@ -31,7 +35,12 @@ export default function AssetRegisterPage() {
   const { data: categoriesData } = useQuery({ queryKey: ['categories', 'all'], queryFn: () => categoryApi.getAll({}) })
   const { data: deptsData } = useQuery({ queryKey: ['departments', 'all'], queryFn: () => departmentApi.getAll({}) })
 
-  const { register, handleSubmit, formState: { errors }, control } = useForm({ resolver: zodResolver(schema) })
+  const { register, handleSubmit, formState: { errors }, control } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: { customFieldsArray: [] }
+  })
+
+  const { fields, append, remove } = useFieldArray({ control, name: 'customFieldsArray' })
 
   const createMutation = useMutation({
     mutationFn: (data) => assetApi.create(data),
@@ -44,11 +53,17 @@ export default function AssetRegisterPage() {
   })
 
   const onSubmit = (data) => {
+    const customFields = {}
+    if (data.customFieldsArray) {
+      data.customFieldsArray.forEach(f => { customFields[f.key] = f.value })
+    }
+
     createMutation.mutate({
       ...data,
       categoryId: Number(data.categoryId),
       departmentId: data.departmentId ? Number(data.departmentId) : undefined,
       purchasePrice: data.purchasePrice ? Number(data.purchasePrice) : undefined,
+      customFields
     })
   }
 
@@ -130,6 +145,38 @@ export default function AssetRegisterPage() {
             <div className="form-group"><label className="form-label">Purchase Price ($)</label><input type="number" {...register('purchasePrice')} className="input" placeholder="0.00" step="0.01" /></div>
             <div className="form-group"><label className="form-label">Warranty Expiry</label><input type="date" {...register('warrantyExpiry')} className="input" /></div>
             <div className="form-group"><label className="form-label">Notes</label><textarea {...register('notes')} className="input" rows={3} placeholder="Internal notes..." style={{ resize: 'vertical' }} /></div>
+          </div>
+
+          {/* Custom Fields */}
+          <div className="glass-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h4 style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Custom Fields</h4>
+              <button type="button" className="btn-ghost btn-sm" onClick={() => append({ key: '', value: '' })}>
+                <Plus size={14} /> Add Field
+              </button>
+            </div>
+            {fields.length === 0 && (
+              <div style={{ fontSize: 13, color: 'var(--color-text-disabled)', textAlign: 'center', padding: '16px 0' }}>
+                No custom fields added. Use this for specific attributes like "MAC Address" or "OS Version".
+              </div>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {fields.map((field, index) => (
+                <div key={field.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                    <input {...register(`customFieldsArray.${index}.key`)} className="input" placeholder="Field Name (e.g. MAC Address)" />
+                    {errors.customFieldsArray?.[index]?.key && <div className="form-error" style={{ marginTop: 4 }}>{errors.customFieldsArray[index].key.message}</div>}
+                  </div>
+                  <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                    <input {...register(`customFieldsArray.${index}.value`)} className="input" placeholder="Value (e.g. 00:1A:2B:3C:4D:5E)" />
+                    {errors.customFieldsArray?.[index]?.value && <div className="form-error" style={{ marginTop: 4 }}>{errors.customFieldsArray[index].value.message}</div>}
+                  </div>
+                  <button type="button" className="btn-ghost" style={{ padding: 8, color: 'var(--color-accent-rose)' }} onClick={() => remove(index)}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

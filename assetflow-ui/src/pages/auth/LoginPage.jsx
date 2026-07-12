@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ArrowRight, Power, RotateCcw, Moon, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import ParticleBackground from '../../components/ui/ParticleBackground'
 
 const schema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -30,13 +31,14 @@ export default function LoginPage() {
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       // macOS Sonoma/Ventura inspired dark abstract background
-      background: 'radial-gradient(ellipse at top right, #5c2c7f, #1e1136 50%, #000000)',
+      background: 'radial-gradient(ellipse at 30% 20%, #3b1f6e 0%, #100b22 45%, #000000 100%)',
       backgroundAttachment: 'fixed',
       position: 'relative',
       overflow: 'hidden',
       color: 'white',
       fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif'
     }}>
+      <ParticleBackground />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

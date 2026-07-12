@@ -21,6 +21,23 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     Optional<Asset> findByAssetTagAndDeletedFalse(String assetTag);
 
+    @Query("""
+        SELECT a FROM Asset a
+        LEFT JOIN FETCH a.category
+        LEFT JOIN FETCH a.department
+        LEFT JOIN FETCH a.createdBy
+        WHERE a.id = :id AND a.deleted = FALSE
+    """)
+    Optional<Asset> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("""
+        SELECT a FROM Asset a
+        LEFT JOIN FETCH a.department d
+        WHERE a.deleted = FALSE
+        AND (:departmentId IS NULL OR d.id = :departmentId)
+    """)
+    List<Asset> findAuditableAssets(@Param("departmentId") Long departmentId);
+
     boolean existsByAssetTagAndDeletedFalse(String assetTag);
 
     boolean existsBySerialNumberAndDeletedFalse(String serialNumber);
@@ -30,10 +47,10 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
         LEFT JOIN FETCH a.category c
         LEFT JOIN FETCH a.department d
         WHERE a.deleted = FALSE
-        AND (:search IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(a.assetTag) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(a.serialNumber) LIKE LOWER(CONCAT('%', :search, '%'))
-             OR LOWER(a.model) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:search IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(a.assetTag) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(a.serialNumber) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
+             OR LOWER(a.model) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%')))
         AND (:categoryId IS NULL OR c.id = :categoryId)
         AND (:status IS NULL OR a.status = :status)
         AND (:condition IS NULL OR a.condition = :condition)
@@ -67,4 +84,13 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     @Query("SELECT a.category.name, COUNT(a) FROM Asset a WHERE a.deleted = FALSE GROUP BY a.category.name ORDER BY COUNT(a) DESC")
     List<Object[]> countByCategory();
+
+    @Query("SELECT a FROM Asset a WHERE a.deleted = FALSE AND a.status = 'AVAILABLE' ORDER BY a.updatedAt ASC")
+    List<Asset> findIdleAssets(Pageable pageable);
+
+    @Query("SELECT SUM(a.purchasePrice) FROM Asset a WHERE a.deleted = FALSE")
+    Optional<java.math.BigDecimal> sumPurchasePrice();
+
+    @Query("SELECT SUM(a.currentValue) FROM Asset a WHERE a.deleted = FALSE")
+    Optional<java.math.BigDecimal> sumCurrentValue();
 }

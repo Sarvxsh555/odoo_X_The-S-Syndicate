@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowRight, UserPlus, Moon, RotateCcw, Power } from 'lucide-react'
+import { ArrowRight, UserPlus } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import PasswordStrengthMeter from '../../components/ui/PasswordStrengthMeter'
 
 const schema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -25,9 +26,10 @@ export default function SignupPage() {
   const { signup, isLoading } = useAuth()
   const navigate = useNavigate()
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
   })
+  const passwordValue = watch('password', '')
 
   const onSubmit = async (data) => {
     const { confirmPassword, ...submitData } = data
@@ -90,6 +92,9 @@ export default function SignupPage() {
 
           <div style={{ width: '100%' }}>
             <input {...register('password')} type="password" placeholder="Password (8+ chars)" style={inputStyle(errors.password)} />
+            <div style={{ paddingLeft: 8, paddingRight: 8 }}>
+              <PasswordStrengthMeter password={passwordValue} />
+            </div>
           </div>
 
           <div style={{ width: '100%', position: 'relative' }}>
