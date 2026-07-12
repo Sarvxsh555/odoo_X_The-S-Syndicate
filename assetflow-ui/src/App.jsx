@@ -14,6 +14,7 @@ const AllocationListPage = lazy(() => import('./pages/allocation/AllocationListP
 const BookingListPage = lazy(() => import('./pages/booking/BookingListPage'))
 const MaintenancePage = lazy(() => import('./pages/maintenance/MaintenancePage'))
 const AuditPage = lazy(() => import('./pages/audit/AuditPage'))
+const ActivityLogPage = lazy(() => import('./pages/activity-log/ActivityLogPage'))
 const DepartmentPage = lazy(() => import('./pages/departments/DepartmentPage'))
 const EmployeePage = lazy(() => import('./pages/employees/EmployeePage'))
 const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage'))
@@ -58,6 +59,7 @@ function AppRoutes() {
           <Route path="bookings" element={<BookingListPage />} />
           <Route path="maintenance" element={<MaintenancePage />} />
           <Route path="audits" element={<AuditPage />} />
+          <Route path="activity-log" element={<ActivityLogPage />} />
           <Route path="departments" element={<DepartmentPage />} />
           <Route path="employees" element={<EmployeePage />} />
           <Route path="notifications" element={<NotificationsPage />} />

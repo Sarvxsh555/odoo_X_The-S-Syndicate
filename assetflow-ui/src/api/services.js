@@ -97,6 +97,11 @@ export const auditApi = {
   getDiscrepancyReport: (id) => api.get(`/audits/${id}/discrepancy-report`),
 }
 
+export const activityLogApi = {
+  getAll: (params) => api.get('/activity-logs', { params }),
+}
+
+
 export const dashboardApi = {
   getStats: () => api.get('/dashboard/stats'),
   getDeptDistribution: () => api.get('/dashboard/department-distribution'),
