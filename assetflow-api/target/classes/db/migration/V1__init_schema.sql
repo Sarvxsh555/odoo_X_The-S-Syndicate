@@ -10,21 +10,20 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- USERS & AUTH
 -- ============================================================
 
-CREATE TYPE user_role AS ENUM ('ROLE_ADMIN', 'ROLE_EMPLOYEE');
-
 CREATE TABLE users (
     id                  BIGSERIAL PRIMARY KEY,
     uuid                UUID NOT NULL DEFAULT uuid_generate_v4() UNIQUE,
     email               VARCHAR(255) NOT NULL UNIQUE,
     password_hash       VARCHAR(255) NOT NULL,
-    role                user_role NOT NULL DEFAULT 'ROLE_EMPLOYEE',
+    role                VARCHAR(50) NOT NULL DEFAULT 'ROLE_EMPLOYEE',
     is_active           BOOLEAN NOT NULL DEFAULT TRUE,
     is_email_verified   BOOLEAN NOT NULL DEFAULT FALSE,
     last_login_at       TIMESTAMP WITH TIME ZONE,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     is_deleted          BOOLEAN NOT NULL DEFAULT FALSE,
-    deleted_at          TIMESTAMP WITH TIME ZONE
+    deleted_at          TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT chk_users_role CHECK (role IN ('ROLE_ADMIN', 'ROLE_EMPLOYEE'))
 );
 
 CREATE TABLE refresh_tokens (
@@ -111,12 +110,6 @@ CREATE TABLE asset_categories (
 -- ASSETS
 -- ============================================================
 
-CREATE TYPE asset_status AS ENUM (
-    'AVAILABLE', 'ALLOCATED', 'RESERVED', 'MAINTENANCE',
-    'LOST', 'RETIRED', 'DISPOSED'
-);
-CREATE TYPE asset_condition AS ENUM ('EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED');
-
 CREATE TABLE assets (
     id                  BIGSERIAL PRIMARY KEY,
     uuid                UUID NOT NULL DEFAULT uuid_generate_v4() UNIQUE,
@@ -124,8 +117,8 @@ CREATE TABLE assets (
     name                VARCHAR(255) NOT NULL,
     description         TEXT,
     category_id         BIGINT NOT NULL REFERENCES asset_categories(id),
-    status              asset_status NOT NULL DEFAULT 'AVAILABLE',
-    condition           asset_condition NOT NULL DEFAULT 'GOOD',
+    status              VARCHAR(50) NOT NULL DEFAULT 'AVAILABLE',
+    condition           VARCHAR(50) NOT NULL DEFAULT 'GOOD',
     location            VARCHAR(255),
     department_id       BIGINT REFERENCES departments(id) ON DELETE SET NULL,
     serial_number       VARCHAR(255),
@@ -141,7 +134,9 @@ CREATE TABLE assets (
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     is_deleted          BOOLEAN NOT NULL DEFAULT FALSE,
-    deleted_at          TIMESTAMP WITH TIME ZONE
+    deleted_at          TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT chk_assets_status CHECK (status IN ('AVAILABLE', 'ALLOCATED', 'RESERVED', 'MAINTENANCE', 'LOST', 'RETIRED', 'DISPOSED')),
+    CONSTRAINT chk_assets_condition CHECK (condition IN ('EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED'))
 );
 
 CREATE TABLE asset_images (
@@ -179,18 +174,18 @@ CREATE TABLE asset_qr_codes (
 CREATE TABLE asset_status_history (
     id              BIGSERIAL PRIMARY KEY,
     asset_id        BIGINT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-    from_status     asset_status,
-    to_status       asset_status NOT NULL,
+    from_status     VARCHAR(50),
+    to_status       VARCHAR(50) NOT NULL,
     reason          TEXT,
     changed_by_user_id BIGINT REFERENCES users(id),
-    changed_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    changed_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_asset_status_history_from_status CHECK (from_status IS NULL OR from_status IN ('AVAILABLE', 'ALLOCATED', 'RESERVED', 'MAINTENANCE', 'LOST', 'RETIRED', 'DISPOSED')),
+    CONSTRAINT chk_asset_status_history_to_status CHECK (to_status IN ('AVAILABLE', 'ALLOCATED', 'RESERVED', 'MAINTENANCE', 'LOST', 'RETIRED', 'DISPOSED'))
 );
 
 -- ============================================================
 -- ALLOCATIONS
 -- ============================================================
-
-CREATE TYPE allocation_status AS ENUM ('ACTIVE', 'RETURNED', 'TRANSFERRED', 'OVERDUE');
 
 CREATE TABLE allocations (
     id                          BIGSERIAL PRIMARY KEY,
@@ -199,17 +194,20 @@ CREATE TABLE allocations (
     allocated_to_user_id        BIGINT NOT NULL REFERENCES users(id),
     allocated_by_user_id        BIGINT NOT NULL REFERENCES users(id),
     department_id               BIGINT REFERENCES departments(id),
-    status                      allocation_status NOT NULL DEFAULT 'ACTIVE',
+    status                      VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
     allocation_date             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     expected_return_date        DATE,
     actual_return_date          TIMESTAMP WITH TIME ZONE,
-    condition_at_allocation     asset_condition,
-    condition_at_return         asset_condition,
+    condition_at_allocation     VARCHAR(50),
+    condition_at_return         VARCHAR(50),
     notes                       TEXT,
     return_notes                TEXT,
     returned_to_user_id         BIGINT REFERENCES users(id),
     created_at                  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at                  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    updated_at                  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_allocations_status CHECK (status IN ('ACTIVE', 'RETURNED', 'TRANSFERRED', 'OVERDUE')),
+    CONSTRAINT chk_allocations_condition_at_allocation CHECK (condition_at_allocation IS NULL OR condition_at_allocation IN ('EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED')),
+    CONSTRAINT chk_allocations_condition_at_return CHECK (condition_at_return IS NULL OR condition_at_return IN ('EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED'))
 );
 
 CREATE TABLE allocation_photos (
@@ -224,14 +222,11 @@ CREATE TABLE allocation_photos (
 -- BOOKABLE RESOURCES & BOOKINGS
 -- ============================================================
 
-CREATE TYPE resource_type AS ENUM ('MEETING_ROOM', 'PROJECTOR', 'VEHICLE', 'EQUIPMENT');
-CREATE TYPE booking_status AS ENUM ('UPCOMING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
-
 CREATE TABLE bookable_resources (
     id          BIGSERIAL PRIMARY KEY,
     uuid        UUID NOT NULL DEFAULT uuid_generate_v4() UNIQUE,
     name        VARCHAR(255) NOT NULL,
-    type        resource_type NOT NULL,
+    type        VARCHAR(50) NOT NULL,
     location    VARCHAR(255),
     capacity    INTEGER,
     description TEXT,
@@ -239,7 +234,8 @@ CREATE TABLE bookable_resources (
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     is_deleted  BOOLEAN NOT NULL DEFAULT FALSE,
-    deleted_at  TIMESTAMP WITH TIME ZONE
+    deleted_at  TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT chk_bookable_resources_type CHECK (type IN ('MEETING_ROOM', 'PROJECTOR', 'VEHICLE', 'EQUIPMENT'))
 );
 
 CREATE TABLE bookings (
@@ -251,23 +247,19 @@ CREATE TABLE bookings (
     description         TEXT,
     start_datetime      TIMESTAMP WITH TIME ZONE NOT NULL,
     end_datetime        TIMESTAMP WITH TIME ZONE NOT NULL,
-    status              booking_status NOT NULL DEFAULT 'UPCOMING',
+    status              VARCHAR(50) NOT NULL DEFAULT 'UPCOMING',
     notes               TEXT,
     reminder_sent       BOOLEAN NOT NULL DEFAULT FALSE,
     cancelled_reason    TEXT,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT chk_booking_dates CHECK (end_datetime > start_datetime)
+    CONSTRAINT chk_booking_dates CHECK (end_datetime > start_datetime),
+    CONSTRAINT chk_bookings_status CHECK (status IN ('UPCOMING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
 );
 
 -- ============================================================
 -- MAINTENANCE
 -- ============================================================
-
-CREATE TYPE maintenance_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
-CREATE TYPE maintenance_status AS ENUM (
-    'PENDING', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
-);
 
 CREATE TABLE maintenance_requests (
     id                      BIGSERIAL PRIMARY KEY,
@@ -276,8 +268,8 @@ CREATE TABLE maintenance_requests (
     requested_by_user_id    BIGINT NOT NULL REFERENCES users(id),
     assigned_technician_id  BIGINT REFERENCES users(id),
     approved_by_user_id     BIGINT REFERENCES users(id),
-    priority                maintenance_priority NOT NULL DEFAULT 'MEDIUM',
-    status                  maintenance_status NOT NULL DEFAULT 'PENDING',
+    priority                VARCHAR(50) NOT NULL DEFAULT 'MEDIUM',
+    status                  VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     title                   VARCHAR(255) NOT NULL,
     description             TEXT,
     resolution_notes        TEXT,
@@ -286,29 +278,29 @@ CREATE TABLE maintenance_requests (
     estimated_cost          DECIMAL(15,2),
     actual_cost             DECIMAL(15,2),
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    updated_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_maintenance_priority CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    CONSTRAINT chk_maintenance_status CHECK (status IN ('PENDING', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'))
 );
 
 -- ============================================================
 -- AUDIT
 -- ============================================================
 
-CREATE TYPE audit_cycle_status AS ENUM ('PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
-CREATE TYPE audit_item_status AS ENUM ('PENDING', 'VERIFIED', 'MISSING', 'DAMAGED');
-
 CREATE TABLE audit_cycles (
     id                  BIGSERIAL PRIMARY KEY,
     uuid                UUID NOT NULL DEFAULT uuid_generate_v4() UNIQUE,
     name                VARCHAR(255) NOT NULL,
     description         TEXT,
-    status              audit_cycle_status NOT NULL DEFAULT 'PLANNED',
+    status              VARCHAR(50) NOT NULL DEFAULT 'PLANNED',
     start_date          DATE NOT NULL,
     end_date            DATE,
     created_by_user_id  BIGINT NOT NULL REFERENCES users(id),
     closed_by_user_id   BIGINT REFERENCES users(id),
     closed_at           TIMESTAMP WITH TIME ZONE,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_audit_cycles_status CHECK (status IN ('PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
 );
 
 CREATE TABLE audit_assignments (
@@ -326,64 +318,55 @@ CREATE TABLE audit_items (
     id                      BIGSERIAL PRIMARY KEY,
     audit_assignment_id     BIGINT NOT NULL REFERENCES audit_assignments(id) ON DELETE CASCADE,
     asset_id                BIGINT NOT NULL REFERENCES assets(id),
-    status                  audit_item_status NOT NULL DEFAULT 'PENDING',
-    condition               asset_condition,
+    status                  VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    condition               VARCHAR(50),
     notes                   TEXT,
     verified_by_user_id     BIGINT REFERENCES users(id),
     verified_at             TIMESTAMP WITH TIME ZONE,
-    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_audit_items_status CHECK (status IN ('PENDING', 'VERIFIED', 'MISSING', 'DAMAGED')),
+    CONSTRAINT chk_audit_items_condition CHECK (condition IS NULL OR condition IN ('EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED'))
 );
 
 -- ============================================================
 -- NOTIFICATIONS
 -- ============================================================
 
-CREATE TYPE notification_type AS ENUM (
-    'ASSET_ALLOCATED', 'ASSET_RETURNED', 'MAINTENANCE_REQUESTED',
-    'MAINTENANCE_RESOLVED', 'BOOKING_CONFIRMED', 'BOOKING_REMINDER',
-    'BOOKING_CANCELLED', 'WARRANTY_EXPIRING', 'AUDIT_ASSIGNED',
-    'APPROVAL_REQUIRED', 'APPROVAL_RESOLVED', 'OVERDUE_RETURN',
-    'GENERAL'
-);
-
 CREATE TABLE notifications (
     id              BIGSERIAL PRIMARY KEY,
     user_id         BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title           VARCHAR(255) NOT NULL,
     message         TEXT NOT NULL,
-    type            notification_type NOT NULL DEFAULT 'GENERAL',
+    type            VARCHAR(50) NOT NULL DEFAULT 'GENERAL',
     is_read         BOOLEAN NOT NULL DEFAULT FALSE,
     entity_type     VARCHAR(100),
     entity_id       BIGINT,
     read_at         TIMESTAMP WITH TIME ZONE,
-    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_notifications_type CHECK (type IN ('ASSET_ALLOCATED', 'ASSET_RETURNED', 'MAINTENANCE_REQUESTED', 'MAINTENANCE_RESOLVED', 'BOOKING_CONFIRMED', 'BOOKING_REMINDER', 'BOOKING_CANCELLED', 'WARRANTY_EXPIRING', 'AUDIT_ASSIGNED', 'APPROVAL_REQUIRED', 'APPROVAL_RESOLVED', 'OVERDUE_RETURN', 'GENERAL'))
 );
 
 -- ============================================================
 -- APPROVAL REQUESTS
 -- ============================================================
 
-CREATE TYPE approval_type AS ENUM (
-    'MAINTENANCE_REQUEST', 'ASSET_DISPOSAL', 'ASSET_TRANSFER',
-    'ALLOCATION_REQUEST', 'AUDIT_CLOSE'
-);
-CREATE TYPE approval_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
-
 CREATE TABLE approval_requests (
     id                      BIGSERIAL PRIMARY KEY,
     uuid                    UUID NOT NULL DEFAULT uuid_generate_v4() UNIQUE,
-    type                    approval_type NOT NULL,
+    type                    VARCHAR(50) NOT NULL,
     entity_id               BIGINT NOT NULL,
     entity_type             VARCHAR(100) NOT NULL,
     requested_by_user_id    BIGINT NOT NULL REFERENCES users(id),
     approved_by_user_id     BIGINT REFERENCES users(id),
-    status                  approval_status NOT NULL DEFAULT 'PENDING',
+    status                  VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     title                   VARCHAR(255) NOT NULL,
     description             TEXT,
     notes                   TEXT,
     resolution_notes        TEXT,
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    resolved_at             TIMESTAMP WITH TIME ZONE
+    resolved_at             TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT chk_approval_type CHECK (type IN ('MAINTENANCE_REQUEST', 'ASSET_DISPOSAL', 'ASSET_TRANSFER', 'ALLOCATION_REQUEST', 'AUDIT_CLOSE')),
+    CONSTRAINT chk_approval_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED'))
 );
 
 -- ============================================================
@@ -433,15 +416,20 @@ CREATE INDEX idx_assets_search ON assets USING gin(to_tsvector('english', name |
 CREATE INDEX idx_alloc_asset ON allocations(asset_id);
 CREATE INDEX idx_alloc_user ON allocations(allocated_to_user_id);
 CREATE INDEX idx_alloc_status ON allocations(status);
+CREATE UNIQUE INDEX uq_alloc_active_asset ON allocations(asset_id) WHERE status = 'ACTIVE';
+CREATE INDEX idx_alloc_expected_return ON allocations(expected_return_date) WHERE status = 'ACTIVE';
 
 -- Bookings
 CREATE INDEX idx_bookings_resource ON bookings(resource_id);
 CREATE INDEX idx_bookings_user ON bookings(booked_by_user_id);
 CREATE INDEX idx_bookings_time ON bookings(start_datetime, end_datetime);
 CREATE INDEX idx_bookings_status ON bookings(status);
+CREATE INDEX idx_bookings_resource_time_active ON bookings(resource_id, start_datetime, end_datetime) WHERE status <> 'CANCELLED';
 
 -- Maintenance
 CREATE INDEX idx_maint_asset ON maintenance_requests(asset_id);
+CREATE INDEX idx_maint_requested_by ON maintenance_requests(requested_by_user_id);
+CREATE INDEX idx_maint_assigned_technician ON maintenance_requests(assigned_technician_id);
 CREATE INDEX idx_maint_status ON maintenance_requests(status);
 CREATE INDEX idx_maint_priority ON maintenance_requests(priority);
 
@@ -456,4 +444,8 @@ CREATE INDEX idx_activity_created ON activity_logs(created_at DESC);
 
 -- Audit
 CREATE INDEX idx_audit_cycle_status ON audit_cycles(status);
+CREATE INDEX idx_audit_assignment_cycle ON audit_assignments(audit_cycle_id);
+CREATE INDEX idx_audit_assignment_auditor ON audit_assignments(auditor_user_id);
+CREATE INDEX idx_audit_item_assignment ON audit_items(audit_assignment_id);
+CREATE INDEX idx_audit_item_asset ON audit_items(asset_id);
 CREATE INDEX idx_audit_item_status ON audit_items(status);
