@@ -132,7 +132,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: 'var(--color-text-disabled)' }}>
-            Default admin: admin@assetflow.com / Admin@123456
+            Default admin: admin@assetflow.com / Admin@123
           </p>
         </motion.div>
       </div>

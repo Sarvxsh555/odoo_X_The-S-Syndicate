@@ -20,41 +20,41 @@ INSERT INTO departments (id, name, code, description, is_active) VALUES
 ALTER SEQUENCE departments_id_seq RESTART WITH 13;
 
 -- 2. SEED USERS & EMPLOYEE PROFILES
--- Password hash for 'Admin@123' / 'Employee@123' (all seeded accounts will use: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq')
+-- Password hash for 'Admin@123' / 'Employee@123' (all seeded accounts will use: '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi')
 -- Users
 INSERT INTO users (id, email, password_hash, role, is_active, is_email_verified) VALUES
-(1, 'admin@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_ADMIN', TRUE, TRUE);
+(1, 'admin@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_ADMIN', TRUE, TRUE);
 
 INSERT INTO users (id, email, password_hash, role, is_active, is_email_verified) VALUES
-(2, 'priya.sharma@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_ADMIN', TRUE, TRUE), -- Asset Manager
-(3, 'sneha.iyer@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE), -- HR Head
-(4, 'arjun.kumar@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(5, 'rahul.menon@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(6, 'akash.verma@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(7, 'neha.gupta@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(8, 'karthik.raj@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(9, 'divya.nair@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(10, 'vivek.reddy@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(11, 'ananya.rao@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(12, 'vikram.singh@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(13, 'rohit.deshmukh@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(14, 'kavita.patel@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(15, 'siddharth.shah@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(16, 'meera.pillai@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(17, 'abhishek.pandey@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(18, 'shreya.sen@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(19, 'manish.joshi@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(20, 'aditi.bose@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(21, 'suresh.menon@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(22, 'harish.krishnan@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(23, 'ranjana.nair@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(24, 'tushar.saxena@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(25, 'rashmi.mishra@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(26, 'vijay.sharma@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(27, 'sunita.williams@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(28, 'nithin.kamath@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(29, 'kunal.shah@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE),
-(30, 'radhika.apte@assetflow.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFf0RL/4.i97qFq', 'ROLE_EMPLOYEE', TRUE, TRUE);
+(2, 'priya.sharma@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_ADMIN', TRUE, TRUE), -- Asset Manager
+(3, 'sneha.iyer@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE), -- HR Head
+(4, 'arjun.kumar@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(5, 'rahul.menon@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(6, 'akash.verma@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(7, 'neha.gupta@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(8, 'karthik.raj@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(9, 'divya.nair@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(10, 'vivek.reddy@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(11, 'ananya.rao@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(12, 'vikram.singh@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(13, 'rohit.deshmukh@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(14, 'kavita.patel@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(15, 'siddharth.shah@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(16, 'meera.pillai@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(17, 'abhishek.pandey@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(18, 'shreya.sen@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(19, 'manish.joshi@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(20, 'aditi.bose@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(21, 'suresh.menon@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(22, 'harish.krishnan@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(23, 'ranjana.nair@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(24, 'tushar.saxena@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(25, 'rashmi.mishra@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(26, 'vijay.sharma@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(27, 'sunita.williams@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(28, 'nithin.kamath@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(29, 'kunal.shah@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE),
+(30, 'radhika.apte@assetflow.com', '$2a$12$pxWzz/fNFoyg3tvtfgewFudlKXOkS6VzbXSMUUkuO.eNZ0yNkYQpi', 'ROLE_EMPLOYEE', TRUE, TRUE);
 
 -- Auto-reset Sequence for users
 ALTER SEQUENCE users_id_seq RESTART WITH 31;
