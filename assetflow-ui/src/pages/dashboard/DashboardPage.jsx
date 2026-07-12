@@ -42,7 +42,7 @@ const StatCard = ({ title, value, icon: Icon, color, change, onClick }) => (
         </div>
       )}
     </div>
-    <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text-primary)', fontFamily: 'Outfit', marginBottom: 4 }}>
+    <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: 4 }}>
       {typeof value === 'number' ? value.toLocaleString() : value}
     </div>
     <div style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>{title}</div>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
     <div className="page-header page-body" style={{ paddingTop: 32 }}>
       {/* Welcome Banner */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, fontFamily: 'Outfit', marginBottom: 4 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
           Good morning, {user?.firstName} 👋
         </h1>
         <p style={{ color: 'var(--color-text-muted)', fontSize: 15 }}>

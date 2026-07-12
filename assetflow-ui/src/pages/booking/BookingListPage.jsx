@@ -21,7 +21,7 @@ function CreateBookingModal({ onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h3 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 18 }}>New Booking</h3>
+          <h3 style={{ fontWeight: 700, fontSize: 18 }}>New Booking</h3>
           <button onClick={onClose} className="btn-ghost btn-sm" style={{ padding: '6px 8px' }}><X size={16} /></button>
         </div>
         <div className="form-group">

@@ -114,7 +114,7 @@ export default function AssetDetailPage() {
 
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Outfit', margin: 0 }}>{asset.name}</h1>
+                <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>{asset.name}</h1>
                 <span className={`badge badge-${STATUS}`}>{asset.status}</span>
                 <span className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1', border: '1px solid rgba(99,102,241,0.2)' }}>
                   {asset.condition}

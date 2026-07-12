@@ -35,7 +35,7 @@ createRoot(document.getElementById('root')).render(
               border: '1px solid #1e1e35',
               borderRadius: '12px',
               fontSize: '14px',
-              fontFamily: 'Inter, sans-serif',
+              
               boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
             },
             success: {

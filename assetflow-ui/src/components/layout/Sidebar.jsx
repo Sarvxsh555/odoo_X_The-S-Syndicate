@@ -54,19 +54,26 @@ export default function Sidebar() {
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Window Controls */}
+      <div style={{ display: 'flex', gap: '8px', padding: '16px 20px', alignItems: 'center' }}>
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f56', border: '1px solid #e0443e' }} />
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ffbd2e', border: '1px solid #dea123' }} />
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#27c93f', border: '1px solid #1aab29' }} />
+      </div>
+
       {/* Logo */}
-      <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
+      <div style={{ padding: '0 16px 16px', borderBottom: '1px solid rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
             background: 'var(--gradient-violet)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(124,58,237,0.4)'
+            boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
           }}>
             <Zap size={18} color="white" />
           </div>
           <div>
-            <div style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+            <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
               AssetFlow
             </div>
             <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 500 }}>
@@ -100,7 +107,8 @@ export default function Sidebar() {
                   <>
                     <item.icon
                       size={16}
-                      color={isActive ? 'var(--color-accent-violet-light)' : 'var(--color-text-muted)'}
+                      strokeWidth={1.75}
+                      color={isActive ? 'white' : 'var(--color-text-secondary)'}
                     />
                     <span style={{ fontSize: 13.5 }}>{item.label}</span>
                   </>
@@ -112,11 +120,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Settings */}
-      <div style={{ borderTop: '1px solid var(--color-border-subtle)', padding: '8px 0' }}>
+      <div style={{ borderTop: '1px solid rgba(0,0,0,0.2)', padding: '8px 0' }}>
         <NavLink to="/settings" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
           {({ isActive }) => (
             <>
-              <Settings size={16} color={isActive ? 'var(--color-accent-violet-light)' : 'var(--color-text-muted)'} />
+              <Settings size={16} strokeWidth={1.75} color={isActive ? 'white' : 'var(--color-text-secondary)'} />
               <span style={{ fontSize: 13.5 }}>Settings</span>
             </>
           )}
@@ -126,7 +134,7 @@ export default function Sidebar() {
       {/* User Profile */}
       <div style={{
         padding: '12px 12px',
-        borderTop: '1px solid var(--color-border-subtle)',
+        borderTop: '1px solid rgba(0,0,0,0.2)',
       }}>
         <div
           onClick={() => setUserMenuOpen(!userMenuOpen)}

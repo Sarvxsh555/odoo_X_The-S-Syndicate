@@ -62,7 +62,7 @@ export default function AssetRegisterPage() {
           <ArrowLeft size={14} /> Back
         </button>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Outfit', margin: 0 }}>Register New Asset</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Register New Asset</h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: 13, marginTop: 2 }}>A QR code will be auto-generated upon creation</p>
         </div>
       </div>

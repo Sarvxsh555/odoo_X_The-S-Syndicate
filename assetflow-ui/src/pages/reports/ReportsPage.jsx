@@ -45,7 +45,7 @@ export default function ReportsPage() {
                 <report.icon size={20} color={report.color} />
               </div>
               <div>
-                <h4 style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Outfit', marginBottom: 4 }}>{report.label}</h4>
+                <h4 style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{report.label}</h4>
                 <p style={{ fontSize: 12, color: 'var(--color-text-muted)', lineHeight: 1.5 }}>{report.description}</p>
               </div>
             </div>

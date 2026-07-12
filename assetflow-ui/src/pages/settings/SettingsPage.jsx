@@ -14,7 +14,7 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <div className="avatar avatar-lg">{user?.firstName?.[0]}{user?.lastName?.[0]}</div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Outfit' }}>{user?.firstName} {user?.lastName}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, }}>{user?.firstName} {user?.lastName}</div>
             <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>{user?.email}</div>
             <span className={`badge badge-${isAdmin ? 'admin' : 'employee'}`} style={{ marginTop: 6, display: 'inline-flex' }}>
               {isAdmin ? 'Administrator' : 'Employee'}

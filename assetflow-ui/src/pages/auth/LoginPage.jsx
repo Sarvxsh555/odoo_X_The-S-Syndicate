@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Zap, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRight, Power, RotateCcw, Moon, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const schema = z.object({
@@ -15,7 +14,6 @@ const schema = z.object({
 export default function LoginPage() {
   const { login, isLoading } = useAuth()
   const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -28,113 +26,129 @@ export default function LoginPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', display: 'flex',
-      background: 'var(--gradient-hero)',
-      position: 'relative', overflow: 'hidden',
+      minHeight: '100vh',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      // macOS Sonoma/Ventura inspired dark abstract background
+      background: 'radial-gradient(ellipse at top right, #5c2c7f, #1e1136 50%, #000000)',
+      backgroundAttachment: 'fixed',
+      position: 'relative',
+      overflow: 'hidden',
+      color: 'white',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif'
     }}>
-      {/* Ambient glow orbs */}
-      <div style={{ position: 'absolute', top: -200, left: -200, width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: -200, right: -200, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        style={{ width: '100%', maxWidth: 320, zIndex: 10 }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          {/* macOS Avatar */}
+          <div style={{
+            width: 100, height: 100, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 16, border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <User size={48} color="rgba(255,255,255,0.8)" strokeWidth={1.5} />
+          </div>
+          <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '0.5px' }}>
+            AssetFlow
+          </h1>
+        </div>
 
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          style={{ width: '100%', maxWidth: 440 }}
-        >
-          {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 16,
-              background: 'var(--gradient-violet)',
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 16,
-              boxShadow: '0 8px 32px rgba(124,58,237,0.4)',
-            }}>
-              <Zap size={28} color="white" />
-            </div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8, fontFamily: 'Outfit' }}>
-              Welcome back
-            </h1>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: 15 }}>
-              Sign in to your AssetFlow workspace
-            </p>
+        {/* Login Form mimicking macOS password input */}
+        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          
+          <div style={{ width: '100%', position: 'relative' }}>
+            <input
+              {...register('email')}
+              type="email"
+              placeholder="Email address"
+              autoComplete="email"
+              style={{
+                width: '100%', padding: '10px 16px', borderRadius: 20,
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: errors.email ? '1px solid rgba(255, 69, 58, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                color: 'white', fontSize: 13, outline: 'none',
+                backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+                textAlign: 'center'
+              }}
+            />
           </div>
 
-          {/* Form */}
-          <div className="glass-card" style={{ padding: 32 }}>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="form-group">
-                <label className="form-label">Email address</label>
-                <div style={{ position: 'relative' }}>
-                  <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
-                  <input
-                    {...register('email')}
-                    className={`input ${errors.email ? 'error' : ''}`}
-                    style={{ paddingLeft: 38 }}
-                    type="email"
-                    placeholder="you@company.com"
-                    autoComplete="email"
-                  />
-                </div>
-                {errors.email && <div className="form-error">{errors.email.message}</div>}
-              </div>
-
-              <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <label className="form-label" style={{ margin: 0 }}>Password</label>
-                  <Link to="/forgot-password" style={{ fontSize: 12, color: 'var(--color-accent-violet-light)' }}>
-                    Forgot password?
-                  </Link>
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
-                  <input
-                    {...register('password')}
-                    className={`input ${errors.password ? 'error' : ''}`}
-                    style={{ paddingLeft: 38, paddingRight: 44 }}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}
-                  >
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-                {errors.password && <div className="form-error">{errors.password.message}</div>}
-              </div>
-
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={isLoading}
-                style={{ width: '100%', justifyContent: 'center', marginTop: 8, opacity: isLoading ? 0.7 : 1 }}
-              >
-                {isLoading ? 'Signing in...' : (
-                  <>Sign in <ArrowRight size={16} /></>
-                )}
-              </button>
-            </form>
-
-            <div className="divider" style={{ margin: '24px 0' }} />
-            <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--color-text-muted)' }}>
-              Don't have an account?{' '}
-              <Link to="/signup" style={{ color: 'var(--color-accent-violet-light)', fontWeight: 600 }}>
-                Create one
-              </Link>
-            </p>
+          <div style={{ width: '100%', position: 'relative' }}>
+            <input
+              {...register('password')}
+              type="password"
+              placeholder="Enter Password"
+              autoComplete="current-password"
+              style={{
+                width: '100%', padding: '10px 36px 10px 16px', borderRadius: 20,
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: errors.password ? '1px solid rgba(255, 69, 58, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                color: 'white', fontSize: 13, outline: 'none',
+                backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+                textAlign: 'center'
+              }}
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                position: 'absolute', right: 6, top: 6, bottom: 6, width: 26,
+                borderRadius: '50%', background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'white', padding: 0
+              }}
+            >
+              <ArrowRight size={14} strokeWidth={2} />
+            </button>
           </div>
 
-          {/* Footer */}
-          <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: 'var(--color-text-disabled)' }}>
-            Default admin: admin@assetflow.com / Admin@123456
-          </p>
-        </motion.div>
+          <div style={{ minHeight: 20 }}>
+            {(errors.email || errors.password) && (
+              <p style={{ color: '#ff453a', fontSize: 12, textAlign: 'center', margin: 0, fontWeight: 500 }}>
+                {errors.email?.message || errors.password?.message || 'Login failed'}
+              </p>
+            )}
+          </div>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Link to="/signup" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, textDecoration: 'none' }}>
+            Create an account
+          </Link>
+        </div>
+      </motion.div>
+
+      {/* macOS Bottom Controls */}
+      <div style={{
+        position: 'absolute', bottom: 40, width: '100%',
+        display: 'flex', justifyContent: 'center', gap: 48
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', opacity: 0.8 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+            <Moon size={18} color="white" strokeWidth={1.5} />
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 500 }}>Sleep</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', opacity: 0.8 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+            <RotateCcw size={18} color="white" strokeWidth={1.5} />
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 500 }}>Restart</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', opacity: 0.8 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+            <Power size={18} color="white" strokeWidth={1.5} />
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 500 }}>Shut Down</span>
+        </div>
       </div>
     </div>
   )

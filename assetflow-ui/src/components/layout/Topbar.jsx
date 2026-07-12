@@ -49,7 +49,7 @@ export default function Topbar() {
     <div className="topbar">
       {/* Page Title */}
       <div style={{ flex: '0 0 auto' }}>
-        <h1 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+        <h1 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
           {pageTitle}
         </h1>
       </div>
@@ -59,7 +59,7 @@ export default function Topbar() {
       {/* Search */}
       <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center' }}>
         <div className="search-wrapper">
-          <Search size={14} />
+          <Search size={14} strokeWidth={1.75} />
           <input
             className="search-input"
             style={{ width: 240, paddingRight: 40 }}
@@ -72,7 +72,7 @@ export default function Topbar() {
             display: 'flex', alignItems: 'center', gap: 2,
             color: 'var(--color-text-disabled)', fontSize: 11
           }}>
-            <Command size={10} />K
+            <Command size={10} strokeWidth={1.75} />K
           </div>
         </div>
       </form>
@@ -92,22 +92,22 @@ export default function Topbar() {
       <button
         onClick={() => navigate('/notifications')}
         style={{
-          position: 'relative', background: 'var(--color-bg-elevated)',
-          border: '1px solid var(--color-border)', borderRadius: 10,
-          padding: '8px', cursor: 'pointer', display: 'flex',
+          position: 'relative', background: 'transparent',
+          border: 'none', borderRadius: 6,
+          padding: '6px', cursor: 'pointer', display: 'flex',
           alignItems: 'center', justifyContent: 'center',
-          color: 'var(--color-text-secondary)', transition: 'all 0.2s',
+          color: 'var(--color-text-secondary)', transition: 'all 0.1s',
         }}
         onMouseEnter={e => {
-          e.currentTarget.style.background = 'var(--color-bg-hover)'
+          e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
           e.currentTarget.style.color = 'var(--color-text-primary)'
         }}
         onMouseLeave={e => {
-          e.currentTarget.style.background = 'var(--color-bg-elevated)'
+          e.currentTarget.style.background = 'transparent'
           e.currentTarget.style.color = 'var(--color-text-secondary)'
         }}
       >
-        <Bell size={16} />
+        <Bell size={16} strokeWidth={1.75} />
         {unreadCount > 0 && (
           <span style={{
             position: 'absolute', top: -4, right: -4,
