@@ -1,6 +1,7 @@
 package com.assetflow.api.module.auth.controller;
 
 import com.assetflow.api.common.dto.ApiResponse;
+import com.assetflow.api.common.exception.InvalidTokenException;
 import com.assetflow.api.module.auth.dto.*;
 import com.assetflow.api.module.auth.security.UserPrincipal;
 import com.assetflow.api.module.auth.service.AuthService;
@@ -38,8 +39,14 @@ public class AuthController {
 
     @PostMapping("/refresh-token")
     @Operation(summary = "Refresh access token using a valid refresh token")
-    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@RequestParam String token) {
-        AuthResponse response = authService.refreshToken(token);
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
+            @RequestParam(required = false) String token,
+            @RequestBody(required = false) RefreshTokenRequest request) {
+        String refreshToken = request != null ? request.getToken() : token;
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new InvalidTokenException("Refresh token is required");
+        }
+        AuthResponse response = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", response));
     }
 

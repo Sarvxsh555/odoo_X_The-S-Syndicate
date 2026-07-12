@@ -4,7 +4,7 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/assetflow_db
+    url: jdbc:postgresql://localhost:5433/assetflow_db
     username: ${DB_USERNAME:assetflow_user}
     password: ${DB_PASSWORD:assetflow_pass}
     driver-class-name: org.postgresql.Driver
@@ -30,6 +30,8 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
     validate-on-migrate: true
+    clean-disabled: false
+    clean-on-validation-error: true
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}

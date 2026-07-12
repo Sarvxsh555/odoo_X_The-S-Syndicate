@@ -78,6 +78,7 @@ public class AssetController {
 
     // Images
     @PostMapping("/{id}/images")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Upload an image for an asset")
     public ResponseEntity<ApiResponse<AssetResponse.ImageInfo>> uploadImage(
             @PathVariable Long id,
@@ -88,6 +89,7 @@ public class AssetController {
     }
 
     @DeleteMapping("/{id}/images/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete an asset image")
     public ResponseEntity<ApiResponse<Void>> deleteImage(@PathVariable Long id, @PathVariable Long imageId) {
         assetService.deleteImage(id, imageId);
@@ -96,6 +98,7 @@ public class AssetController {
 
     // Documents
     @PostMapping("/{id}/documents")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Upload a document for an asset")
     public ResponseEntity<ApiResponse<AssetResponse.DocumentInfo>> uploadDocument(
             @PathVariable Long id,
@@ -107,6 +110,7 @@ public class AssetController {
     }
 
     @DeleteMapping("/{id}/documents/{documentId}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete an asset document")
     public ResponseEntity<ApiResponse<Void>> deleteDocument(@PathVariable Long id, @PathVariable Long documentId) {
         assetService.deleteDocument(id, documentId);

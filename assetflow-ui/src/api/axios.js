@@ -32,7 +32,7 @@ api.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const response = await axios.post(`/api/v1/auth/refresh-token?token=${refreshToken}`)
+          const response = await axios.post('/api/v1/auth/refresh-token', { token: refreshToken })
           const { accessToken } = response.data.data
           localStorage.setItem('accessToken', accessToken)
           originalRequest.headers.Authorization = `Bearer ${accessToken}`

@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -107,17 +108,8 @@ public class AuditService {
 
         assignment = auditAssignmentRepository.save(assignment);
 
-        // Populate items automatically: find all assets belonging to this department (or general if dept is null)
-        List<Asset> assets;
-        if (dept != null) {
-            assets = assetRepository.findAll().stream()
-                    .filter(a -> a.getDepartment() != null && a.getDepartment().getId().equals(dept.getId()) && !a.isDeleted())
-                    .collect(Collectors.toList());
-        } else {
-            assets = assetRepository.findAll().stream()
-                    .filter(a -> !a.isDeleted())
-                    .collect(Collectors.toList());
-        }
+        // Populate items automatically from the database instead of loading every asset.
+        List<Asset> assets = assetRepository.findAuditableAssets(dept != null ? dept.getId() : null);
 
         for (Asset asset : assets) {
             AuditItem item = AuditItem.builder()
