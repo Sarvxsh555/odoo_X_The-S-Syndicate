@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import {
   LayoutDashboard, Package, ArrowLeftRight, Calendar,
   Wrench, ClipboardCheck, Building2, Users, Bell,
-  BarChart3, Search, Settings, LogOut, Zap, ChevronDown
+  BarChart3, Search, Settings, LogOut, Zap, ChevronDown, History
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useState } from 'react'
@@ -38,6 +38,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/notifications', icon: Bell, label: 'Notifications' },
       { to: '/reports', icon: BarChart3, label: 'Reports' },
+      { to: '/activity-log', icon: History, label: 'Activity Log', adminOnly: true },
     ]
   },
 ]
@@ -90,7 +91,9 @@ export default function Sidebar() {
             }}>
               {section.label}
             </div>
-            {section.items.map((item) => (
+            {section.items
+              .filter(item => !item.adminOnly || isAdmin)
+              .map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
