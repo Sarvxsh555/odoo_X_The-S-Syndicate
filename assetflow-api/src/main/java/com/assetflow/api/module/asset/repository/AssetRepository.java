@@ -21,6 +21,23 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     Optional<Asset> findByAssetTagAndDeletedFalse(String assetTag);
 
+    @Query("""
+        SELECT a FROM Asset a
+        LEFT JOIN FETCH a.category
+        LEFT JOIN FETCH a.department
+        LEFT JOIN FETCH a.createdBy
+        WHERE a.id = :id AND a.deleted = FALSE
+    """)
+    Optional<Asset> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("""
+        SELECT a FROM Asset a
+        LEFT JOIN FETCH a.department d
+        WHERE a.deleted = FALSE
+        AND (:departmentId IS NULL OR d.id = :departmentId)
+    """)
+    List<Asset> findAuditableAssets(@Param("departmentId") Long departmentId);
+
     boolean existsByAssetTagAndDeletedFalse(String assetTag);
 
     boolean existsBySerialNumberAndDeletedFalse(String serialNumber);

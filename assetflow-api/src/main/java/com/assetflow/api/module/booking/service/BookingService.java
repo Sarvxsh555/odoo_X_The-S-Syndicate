@@ -3,6 +3,7 @@ package com.assetflow.api.module.booking.service;
 import com.assetflow.api.common.dto.PageResponse;
 import com.assetflow.api.common.exception.BusinessException;
 import com.assetflow.api.common.exception.ResourceNotFoundException;
+import com.assetflow.api.module.auth.entity.UserRole;
 import com.assetflow.api.module.auth.repository.UserRepository;
 import com.assetflow.api.module.booking.dto.*;
 import com.assetflow.api.module.booking.entity.*;
@@ -46,6 +47,10 @@ public class BookingService {
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request, Long userId) {
+        if (!request.getEndDatetime().isAfter(request.getStartDatetime())) {
+            throw new BusinessException("End time must be after start time");
+        }
+
         BookableResource resource = resourceRepository.findByIdAndDeletedFalse(request.getResourceId())
                 .orElseThrow(() -> new ResourceNotFoundException("Resource", request.getResourceId()));
 
@@ -58,10 +63,6 @@ public class BookingService {
                 request.getResourceId(), request.getStartDatetime(), request.getEndDatetime());
         if (!overlapping.isEmpty()) {
             throw new BusinessException("Booking conflicts with an existing reservation for this resource. Please choose a different time slot.");
-        }
-
-        if (!request.getEndDatetime().isAfter(request.getStartDatetime())) {
-            throw new BusinessException("End time must be after start time");
         }
 
         var user = userRepository.findById(userId)
@@ -96,6 +97,12 @@ public class BookingService {
 
         if (booking.getStatus() == BookingStatus.COMPLETED) {
             throw new BusinessException("Cannot cancel a completed booking");
+        }
+
+        var requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        if (!booking.getBookedBy().getId().equals(userId) && requester.getRole() != UserRole.ROLE_ADMIN) {
+            throw new BusinessException("You can only cancel your own bookings");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);

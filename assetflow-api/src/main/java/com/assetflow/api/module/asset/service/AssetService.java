@@ -30,8 +30,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -61,12 +61,17 @@ public class AssetService {
         PageRequest pageRequest = PageRequest.of(page, size, sort);
         Page<Asset> assets = assetRepository.findAllWithFilters(
                 search, categoryId, status, condition, departmentId, pageRequest);
-        return PageResponse.of(assets.map(this::toSummaryResponse));
+        List<Long> assetIds = assets.getContent().stream().map(Asset::getId).toList();
+        Map<Long, AssetImage> primaryImages = assetIds.isEmpty()
+                ? Map.of()
+                : imageRepository.findByAssetIdInAndPrimaryTrue(assetIds).stream()
+                        .collect(Collectors.toMap(img -> img.getAsset().getId(), Function.identity(), (first, ignored) -> first));
+        return PageResponse.of(assets.map(asset -> toSummaryResponse(asset, primaryImages.get(asset.getId()))));
     }
 
     @Transactional(readOnly = true)
     public AssetResponse getAssetById(Long id) {
-        Asset asset = assetRepository.findByIdAndDeletedFalse(id)
+        Asset asset = assetRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset", id));
         return toDetailResponse(asset);
     }
@@ -300,11 +305,16 @@ public class AssetService {
     }
 
     private AssetResponse toSummaryResponse(Asset asset) {
-        String primaryImageUrl = asset.getImages().stream()
+        AssetImage primaryImage = imageRepository.findByAssetIdOrderByPrimaryDesc(asset.getId()).stream()
                 .filter(AssetImage::isPrimary)
                 .findFirst()
-                .map(AssetImage::getUrl)
                 .orElse(null);
+
+        return toSummaryResponse(asset, primaryImage);
+    }
+
+    private AssetResponse toSummaryResponse(Asset asset, AssetImage primaryImage) {
+        String primaryImageUrl = primaryImage != null ? primaryImage.getUrl() : null;
 
         int warrantyDaysLeft = 0;
         boolean warrantyExpired = false;
