@@ -44,4 +44,13 @@ public interface AllocationRepository extends JpaRepository<Allocation, Long> {
     List<Allocation> findUpcomingReturns(@Param("start") LocalDate start, @Param("end") LocalDate end, Pageable pageable);
 
     long countByStatus(AllocationStatus status);
+
+    @Query("""
+        SELECT a FROM Allocation a
+        LEFT JOIN FETCH a.asset ast
+        LEFT JOIN FETCH a.allocatedTo u
+        LEFT JOIN FETCH a.department d
+        ORDER BY a.createdAt DESC
+    """)
+    List<Allocation> findAllForReport();
 }

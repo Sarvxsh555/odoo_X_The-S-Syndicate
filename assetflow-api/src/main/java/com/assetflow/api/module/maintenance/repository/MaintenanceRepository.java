@@ -36,4 +36,13 @@ public interface MaintenanceRepository extends JpaRepository<MaintenanceRequest,
 
     @Query("SELECT m.priority, COUNT(m) FROM MaintenanceRequest m WHERE m.status NOT IN ('RESOLVED', 'CANCELLED') GROUP BY m.priority")
     List<Object[]> countActivByPriority();
+
+    @Query("""
+        SELECT m FROM MaintenanceRequest m
+        LEFT JOIN FETCH m.asset a
+        LEFT JOIN FETCH m.requestedBy rb
+        LEFT JOIN FETCH m.assignedTechnician tech
+        ORDER BY m.createdAt DESC
+    """)
+    List<MaintenanceRequest> findAllForReport();
 }

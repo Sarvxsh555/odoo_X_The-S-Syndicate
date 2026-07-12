@@ -84,4 +84,22 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     @Query("SELECT a.category.name, COUNT(a) FROM Asset a WHERE a.deleted = FALSE GROUP BY a.category.name ORDER BY COUNT(a) DESC")
     List<Object[]> countByCategory();
+
+    // Report queries
+    @Query("""
+        SELECT a FROM Asset a
+        LEFT JOIN FETCH a.category
+        LEFT JOIN FETCH a.department
+        WHERE a.deleted = FALSE
+        ORDER BY a.assetTag ASC
+    """)
+    List<Asset> findAllForReport();
+
+    @Query("""
+        SELECT a FROM Asset a
+        LEFT JOIN FETCH a.category
+        WHERE a.deleted = FALSE AND a.warrantyExpiry IS NOT NULL
+        ORDER BY a.warrantyExpiry ASC
+    """)
+    List<Asset> findWarrantyReport();
 }

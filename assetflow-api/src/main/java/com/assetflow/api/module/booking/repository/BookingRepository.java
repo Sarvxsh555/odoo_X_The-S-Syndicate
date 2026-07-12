@@ -56,4 +56,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByStatusAndReminderSentFalseAndStartDatetimeBetween(
             BookingStatus status, Instant start, Instant end);
+
+    @Query("""
+        SELECT b FROM Booking b
+        LEFT JOIN FETCH b.resource r
+        LEFT JOIN FETCH b.bookedBy u
+        ORDER BY b.startDatetime DESC
+    """)
+    List<Booking> findAllForReport();
 }
