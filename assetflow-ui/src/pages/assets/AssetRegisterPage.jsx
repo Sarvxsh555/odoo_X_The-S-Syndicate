@@ -32,12 +32,24 @@ export default function AssetRegisterPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data: categoriesData } = useQuery({ queryKey: ['categories', 'all'], queryFn: () => categoryApi.getAll({}) })
-  const { data: deptsData } = useQuery({ queryKey: ['departments', 'all'], queryFn: () => departmentApi.getAll({}) })
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: () => categoryApi.getAll({}),
+    retry: 3,
+    retryDelay: 2000,
+    staleTime: 0,
+  })
+  const { data: deptsData } = useQuery({
+    queryKey: ['departments', 'all'],
+    queryFn: () => departmentApi.getAll({}),
+    retry: 3,
+    retryDelay: 2000,
+    staleTime: 0,
+  })
 
   const { register, handleSubmit, formState: { errors }, control } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { customFieldsArray: [] }
+    defaultValues: { condition: 'GOOD', customFieldsArray: [] }
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'customFieldsArray' })

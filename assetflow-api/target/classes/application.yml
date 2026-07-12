@@ -15,6 +15,7 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
   jpa:
+    open-in-view: false  # REST API — no view rendering, suppresses JPA warning
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -89,6 +90,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    mail:
+      enabled: false   # Don't fail health check when SMTP creds are not set
 
 # SpringDoc / Swagger
 springdoc:
