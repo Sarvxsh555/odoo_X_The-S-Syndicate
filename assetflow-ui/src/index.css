@@ -116,7 +116,12 @@
   }
 
   .glass-card-hover {
-    @apply glass-card;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card), var(--shadow-inset);
     transition: all 0.25s ease;
   }
   .glass-card-hover:hover {
@@ -142,7 +147,18 @@
   }
 
   .btn-primary {
-    @apply btn;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
     background: var(--gradient-violet);
     color: white;
     box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
@@ -155,7 +171,18 @@
   .btn-primary:active { transform: translateY(0); }
 
   .btn-secondary {
-    @apply btn;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
     background: var(--color-bg-elevated);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
@@ -167,7 +194,18 @@
   }
 
   .btn-ghost {
-    @apply btn;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
     background: transparent;
     color: var(--color-text-secondary);
     border: 1px solid transparent;
@@ -179,7 +217,18 @@
   }
 
   .btn-danger {
-    @apply btn;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
     background: rgba(244, 63, 94, 0.15);
     color: #f43f5e;
     border: 1px solid rgba(244, 63, 94, 0.3);
@@ -320,7 +369,12 @@
 
   /* === STAT CARD === */
   .stat-card {
-    @apply glass-card;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card), var(--shadow-inset);
     padding: 24px;
     position: relative;
     overflow: hidden;
@@ -385,7 +439,16 @@
 
   /* === SEARCH INPUT === */
   .search-input {
-    @apply input;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    outline: none;
     padding-left: 40px;
   }
   .search-wrapper {
@@ -436,7 +499,12 @@
     padding: 24px;
   }
   .modal-content {
-    @apply glass-card;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card), var(--shadow-inset);
     width: 100%;
     max-width: 560px;
     max-height: 90vh;

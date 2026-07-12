@@ -27,7 +27,7 @@
         <poi.version>5.2.5</poi.version>
         <opencsv.version>5.9</opencsv.version>
         <itext.version>8.0.4</itext.version>
-        <lombok.version>1.18.32</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
     </properties>
 
     <dependencies>
